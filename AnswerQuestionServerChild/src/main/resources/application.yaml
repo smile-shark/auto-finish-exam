@@ -18,6 +18,15 @@ spring:
           max-wait: 100 # 最大等待时间(毫秒)
   application:
     name: AnswerQuestionServerChild
+server:
+  port: 8080
+shiro:
+  ws:
+    server:
+      enable: true
+      url: "/rebot"
+rebot:
+  handler-groups: 958803816 # 监听的群号
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true # 驼峰命名规则
@@ -65,6 +74,9 @@ school:
     TEACHER_CLIENT_ID: c12abe723eda4b66af77015f2b572440
     TEACHER_CLIENT_SECRET: yHpq/AII2pBeUrUlSeMZhEs84gxSfQ/y+PyGBOmI6dh33EK6Za1VwHwz7uRRifUC
     MISTAKES_MAX_COUNT: 2000
+another:
+  url:
+    EARLY_PAPER_URL: https://bpi.icodeq.com/163news
 key:
   token:
     key: smileshark&${mysql.data.split.string}

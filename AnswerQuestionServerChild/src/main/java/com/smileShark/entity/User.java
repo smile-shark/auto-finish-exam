@@ -74,4 +74,7 @@ public class User implements Serializable {
 
     @TableField("token_create_time")
     private LocalDateTime tokenCreateTime;
+
+    @TableField("qq_account")
+    private String qqAccount;
 }

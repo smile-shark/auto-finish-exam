@@ -23,10 +23,7 @@ import com.smileShark.interceptor.TokenInterceptor;
 import com.smileShark.mapper.UserMapper;
 import com.smileShark.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.smileShark.utils.RestTemplateUtil;
-import com.smileShark.utils.SearchStringUtil;
-import com.smileShark.utils.ThreadUtils;
-import com.smileShark.utils.TokenUtil;
+import com.smileShark.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.ognl.Token;
@@ -34,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -46,6 +44,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -68,6 +67,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
     private QuestionAndAnswerService questionAndAnswerService;
     private SchoolLoginResponse loginToken;
     private CourseService courseService;
+    private final StringRedisTemplate stringRedisTemplate;
 
 
     @Override
@@ -365,6 +365,51 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
         userLambdaQueryWrapper.ne(User::getIdentity, 2);
         return Result.success("获取成功", page(new Page<>(page, size), userLambdaQueryWrapper));
     }
+
+    @Override
+    public Result createCode() {
+        User user = TokenInterceptor.getUser();
+        // 生成验证码
+        String verifyCode = VerifyCode.createVerifyCode();
+        // 保存验证码到redis，这个码需要在其他端去验证，所以需要分别将account和verifyCode作为key
+        stringRedisTemplate.opsForValue().set(
+                RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode","account", user.getUserId()),
+                verifyCode,
+                10,
+                TimeUnit.MINUTES
+        );
+        stringRedisTemplate.opsForValue().set(
+                RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode","code", verifyCode),
+                user.getUserId(),
+                10,
+                TimeUnit.MINUTES
+        );
+        return Result.success("验证码获取成功", verifyCode);
+    }
+
+    @Override
+    public Result verifyCode() {
+        User user = TokenInterceptor.getUser();
+        // 其他端验证成功后会吧code部分删除，但是保留account部分，如果code为空，account不为空就验证通过
+        String  code= stringRedisTemplate.opsForValue().get(
+                RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode","account", user.getUserId())
+        );
+        if (code == null) {
+            // 账号对应的验证码不会主动删除所以应该是过期了
+            throw new BusinessException("验证码已过期", 401);
+        }
+        // 根据获取到的验证码去获取账号，如果有就说明没有通过验证
+        String account = stringRedisTemplate.opsForValue().get(
+                RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode", "code", code)
+        );
+        if (account!=null) {
+            throw new BusinessException("验证失败", 401);
+        }
+        // 验证码验证成功，删除redis中的验证码
+        stringRedisTemplate.delete(RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode","account", user.getUserId()));
+        return Result.success("验证通过");
+    }
+
     public void saveDetailCourseInfo(List<Future<SchoolStudentCourseInfoResponse>> futures) {
         try {
             for (Future<SchoolStudentCourseInfoResponse> future : futures) {

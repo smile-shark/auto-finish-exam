@@ -39,6 +39,18 @@ public class UserController {
         return userService.login(request);
     }
 
+    // 创建一个验证码给对饮的账号
+    @GetMapping("/create-code")
+    public Result createCode() {
+        return userService.createCode();
+    }
+
+    // 验证验证码
+    @GetMapping("/verify-code")
+    public Result verifyCode() {
+        return userService.verifyCode();
+    }
+
     // 获取用户信息
     @GetMapping("/info")
     @SecurityRequirement(name = "bearerAuth")

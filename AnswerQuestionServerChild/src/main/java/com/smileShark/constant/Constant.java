@@ -1,7 +1,11 @@
 package com.smileShark.constant;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 @Component
@@ -78,4 +82,12 @@ public class Constant {
     public String TEACHER_CLIENT_SECRET_PARAM;
     @Value("${school.params.MISTAKES_MAX_COUNT}")
     public Integer MISTAKES_MAX_COUNT;
+
+    // robot
+    @Value("${rebot.handler-groups}")
+    public Long REBOT_HANDLER_GROUPS;
+
+    // another
+    @Value("${another.url.EARLY_PAPER_URL}")
+    public String EARLY_PAPER_URL;
 }

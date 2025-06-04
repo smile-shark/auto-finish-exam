@@ -29,4 +29,8 @@ public interface UserService extends IService<User> {
     void verifyAdmin();
 
     Result pageList(Integer page, Integer size, String account, String userName, Integer isTest, Integer identity);
+
+    Result createCode();
+
+    Result verifyCode();
 }
