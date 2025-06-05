@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author smileShark
- * @since 2025年06月01日
+ * @since 2025年06月05日
  */
 @Getter
 @Setter
@@ -35,8 +35,11 @@ public class User implements Serializable {
     @TableField("user_password")
     private String userPassword;
 
-    @TableField("data")
-    private Integer data;
+    /**
+     * 是否是测试账号
+     */
+    @TableField("is_test")
+    private Integer isTest;
 
     @TableField("class_name")
     private String className;
@@ -73,4 +76,10 @@ public class User implements Serializable {
 
     @TableField("token_create_time")
     private LocalDateTime tokenCreateTime;
+
+    /**
+     * qq账号
+     */
+    @TableField("qq_account")
+    private String qqAccount;
 }

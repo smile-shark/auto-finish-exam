@@ -20,6 +20,16 @@ public class GlobalBotUtil {
      * @return
      */
     public boolean groupIdVerify(GroupMessageEvent event){
-        return Objects.equals(event.getGroupId(), constant.REBOT_HANDLER_GROUPS);
+        return !Objects.equals(event.getGroupId(), constant.REBOT_HANDLER_GROUPS);
+    }
+
+    /**
+     * 获取消息内容匹配规则后的参数
+     * @param regex
+     * @param message
+     * @return
+     */
+    public String messageExtract(String regex,String message){
+        return message.split(regex)[1];
     }
 }

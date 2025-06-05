@@ -6,11 +6,13 @@
     <resultMap id="BaseResultMap" type="com.smileShark.entity.Course">
         <id column="course_id" property="courseId" />
         <result column="course_name" property="courseName" />
+        <result column="lesson_id" property="lessonId" />
+        <result column="create_time" property="createTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        course_id, course_name
+        course_id, course_name, lesson_id, create_time
     </sql>
 
 </mapper>

@@ -5,14 +5,16 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ * 早报表
  * </p>
  *
  * @author smileShark
@@ -21,23 +23,18 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("course")
-public class Course implements Serializable {
+@TableName("early_morning_report")
+@AllArgsConstructor
+public class EarlyMorningReport implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "course_id", type = IdType.ASSIGN_UUID)
-    private String courseId;
-
-    @TableField("course_name")
-    private String courseName;
-
     /**
-     * 教师端的新课程id
+     * 日期
      */
-    @TableField("lesson_id")
-    private String lessonId;
+    @TableId(value = "on_day", type = IdType.ASSIGN_UUID)
+    private LocalDate onDay;
 
-    @TableField("create_time")
-    private LocalDateTime createTime;
+    @TableField("data")
+    private String data;
 }

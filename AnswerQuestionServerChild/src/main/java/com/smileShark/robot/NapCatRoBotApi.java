@@ -26,7 +26,9 @@ public class NapCatRoBotApi {
     private final EarlyMorningReportUtil earlyMorningReportUtil;
 
     @AnyMessageHandler
-    public void onAnyMessage(Bot bot, AnyMessageEvent event) {
+    public void onAnyMessage(Bot bot, String message) {
+        System.out.println(message);
+//        public void onAnyMessage(Bot bot, AnyMessageEvent event) {
         // 初始化全局对象，用于定时主动发送消息
         if(GlobalBotUtil.bot == null){
             GlobalBotUtil.bot = bot;
@@ -46,7 +48,7 @@ public class NapCatRoBotApi {
     @PrivateMessageHandler
     public void onPrivateMessage(Bot bot, PrivateMessageEvent event,Matcher matcher) {
         // 返回早报内容
-        News163OutResponse earlyMorningReport = earlyMorningReportUtil.getEarlyMorningReport();
+        News163OutResponse earlyMorningReport = earlyMorningReportUtil.getEarlyMorningReport(0);
         GlobalBotUtil.bot.sendGroupMsg(
                 constant.REBOT_HANDLER_GROUPS,
                 String.join("\n",earlyMorningReport.getAllData()),

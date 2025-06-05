@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author smileShark
- * @since 2025年06月01日
+ * @since 2025年06月05日
  */
 @Getter
 @Setter

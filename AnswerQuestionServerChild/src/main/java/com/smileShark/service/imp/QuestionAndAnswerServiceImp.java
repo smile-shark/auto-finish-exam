@@ -320,6 +320,9 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                 Future<?> future = ThreadUtils.executorService.submit(() -> {
                     // 考试开始，获取题目
                     SchoolStudentSubsectionQuestionListResponse studentExamInfo = getStudentSubsectionQuestionById(loginTokenInfo, subsection.getSubsectionId());
+                    if (studentExamInfo == null) {
+                        return null;
+                        }
                     // 提交线程认为考试题目
                     List<Future<?>> examFutures = new ArrayList<>();
                     for (SchoolStudentSubsectionQuestionListResponse.Question question : studentExamInfo.getQuestionList()) {

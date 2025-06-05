@@ -5,14 +5,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
- *  前端控制器
+ * 早报表 前端控制器
  * </p>
  *
  * @author smileShark
  * @since 2025年06月05日
  */
 @RestController
-@RequestMapping("/questionAndAnswer")
-public class QuestionAndAnswerController {
+@RequestMapping("/earlyMorningReport")
+public class EarlyMorningReportController {
 
 }

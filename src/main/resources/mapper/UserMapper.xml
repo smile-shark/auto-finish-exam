@@ -7,7 +7,7 @@
         <id column="user_id" property="userId" />
         <result column="username" property="username" />
         <result column="user_password" property="userPassword" />
-        <result column="data" property="data" />
+        <result column="is_test" property="isTest" />
         <result column="class_name" property="className" />
         <result column="class_id" property="classId" />
         <result column="teacher_name" property="teacherName" />
@@ -19,11 +19,12 @@
         <result column="identity" property="identity" />
         <result column="token" property="token" />
         <result column="token_create_time" property="tokenCreateTime" />
+        <result column="qq_account" property="qqAccount" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        user_id, username, user_password, data, class_name, class_id, teacher_name, teacher_id, level_id, level_name, school_id, school_name, identity, token, token_create_time
+        user_id, username, user_password, is_test, class_name, class_id, teacher_name, teacher_id, level_id, level_name, school_id, school_name, identity, token, token_create_time, qq_account
     </sql>
 
 </mapper>

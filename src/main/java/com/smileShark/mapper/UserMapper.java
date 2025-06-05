@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author smileShark
- * @since 2025年06月01日
+ * @since 2025年06月05日
  */
 @Mapper
 public interface UserMapper extends BaseMapper<User> {

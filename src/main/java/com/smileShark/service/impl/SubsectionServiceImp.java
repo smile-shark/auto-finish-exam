@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author smileShark
- * @since 2025年06月01日
+ * @since 2025年06月05日
  */
 @Service
 public class SubsectionServiceImp extends ServiceImpl<SubsectionMapper, Subsection> implements SubsectionService {

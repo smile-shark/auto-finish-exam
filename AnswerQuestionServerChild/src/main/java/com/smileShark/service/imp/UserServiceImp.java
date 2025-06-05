@@ -68,6 +68,8 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
     private SchoolLoginResponse loginToken;
     private CourseService courseService;
     private final StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedisLockUtil redisLockUtil;
 
 
     @Override
@@ -384,6 +386,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
                 10,
                 TimeUnit.MINUTES
         );
+        redisLockUtil.setUserCodeLock();
         return Result.success("验证码获取成功", verifyCode);
     }
 
