@@ -110,6 +110,7 @@
 </template>
 
 <script>
+import { utils } from "@/utils/globalUtils";
 export default {
   data() {
     return {

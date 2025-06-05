@@ -147,7 +147,8 @@ CREATE TABLE `user` (
 insert into user (user_id,username,user_password) values ('AdminIsSmileShark','管理者','simple_password');
 
 -- 授予用户远程访问权限
-GRANT ALL PRIVILEGES ON *.* TO 'sharktool'@'%' IDENTIFIED BY 'sharktool';
+CREATE USER IF NOT EXISTS 'sharktool'@'%' IDENTIFIED BY 'sharktool';
+GRANT ALL PRIVILEGES ON *.* TO 'sharktool'@'%';
 FLUSH PRIVILEGES;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -157,5 +158,3 @@ FLUSH PRIVILEGES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-06-05 16:25:23
