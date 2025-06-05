@@ -214,12 +214,6 @@ export default {
   line-height: 60px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  /* border:solid 1px red; */
-}
-
 .show-image {
   height: 100%;
 }

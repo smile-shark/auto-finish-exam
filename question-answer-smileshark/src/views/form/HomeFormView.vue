@@ -25,8 +25,12 @@
                 <el-menu-item index="2-3" @click="$router.push('/TeacherFinishTestExam')">教师测评一键完成</el-menu-item>
                 <el-menu-item index="2-4" @click="ToCompleteDaily">日精进一键完成</el-menu-item>
               </el-submenu>
-              <el-menu-item index="3" @click="dialogVisible = true">QQ群</el-menu-item>
-              <el-menu-item index="4" @click="exitToolBox">退出</el-menu-item>
+              <el-menu-item index="3" @click="dialogVisible = true">
+                <template slot="title">QQ群</template>
+              </el-menu-item>
+              <el-menu-item index="4" @click="exitToolBox">
+                <template slot="title">退出</template>
+              </el-menu-item>
               <el-menu-item index="5"><el-tooltip :content="'背景颜色：' + backgroundColor" placement="top">
                 <el-switch active-color="#19b65a" v-model="backgroundColor" active-value="流光背景" inactive-value="原背景"
                   @change="changeBgColor"></el-switch>
@@ -48,11 +52,11 @@
     <el-dialog
       :visible.sync="dialogVisible"
       title="加入QQ群：958803816"
-      width="30%"
+      width="23%"
       @opened="dialogOpened"
       @closed="dialogClosed"
     >
-    <img src="@/assets/image/qq-group.jpg" style="width:100%;"/>
+    <img src="@/assets/image/qq-group.png" style="width:20vw;"/>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="confirmDialog">确 定</el-button>
       </span>
@@ -147,11 +151,6 @@ export default {
     } else {
       this.backgroungColorIsTrue = false
     }
-    setTimeout(() => {
-      this.dialogVisible = true;
-    }, 500);
-
-
   }
 }
 </script>
@@ -231,11 +230,7 @@ body {
   line-height: 60px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  /* border:solid 1px red; */
-}
+
 
 .show-image {
   height: 100%;

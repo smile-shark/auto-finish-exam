@@ -2,10 +2,12 @@ package com.smileShark.service;
 
 import com.smileShark.common.Result;
 import com.smileShark.common.request.Request;
+import com.smileShark.common.response.FinishQuestionCount;
 import com.smileShark.entity.QuestionAndAnswer;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.smileShark.entity.Subsection;
 import com.smileShark.entity.User;
+import com.smileShark.entity.robot.RobotExam;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,4 +41,6 @@ public interface QuestionAndAnswerService extends IService<QuestionAndAnswer> {
     void saveAnswer(User user);
 
     Result finishNormalExam(User user, List<Subsection> subsections);
+
+    FinishQuestionCount reBotFinishNormalExam(RobotExam examInfo);
 }

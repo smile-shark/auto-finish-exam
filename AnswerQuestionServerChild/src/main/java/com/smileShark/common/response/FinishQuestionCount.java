@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class FinishQuestionCount {
     private Integer rightAnswerCount;
     private Integer noAnswerCount;
+    private Integer totalCount;
 }

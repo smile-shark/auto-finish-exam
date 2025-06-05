@@ -214,17 +214,17 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
                 // 管理员登录
                 User one = lambdaQuery().eq(User::getUserId, request.getUserId()).one();
                 if (one == null) {
-                    throw new BusinessException("用户不存在", 401);
+                    throw new BusinessException("用户不存在", 402);
                 } else {
                     if (one.getUserPassword().equals(request.getUserPassword())) {
                         // 身份验证
                         if(one.getIdentity()!=2){
-                            throw new BusinessException("权限不足", 403);
+                            throw new BusinessException("权限不足", 401);
                         }
                         // 管理员登录成功
                         BeanUtil.copyProperties(one, user);
                     } else {
-                        throw new BusinessException("密码错误", 401);
+                        throw new BusinessException("密码错误", 403);
                     }
                 }
                 break;
@@ -399,14 +399,14 @@ public class UserServiceImp extends ServiceImpl<UserMapper, User> implements Use
         );
         if (code == null) {
             // 账号对应的验证码不会主动删除所以应该是过期了
-            throw new BusinessException("验证码已过期", 401);
+            throw new BusinessException("验证码已过期", 405);
         }
         // 根据获取到的验证码去获取账号，如果有就说明没有通过验证
         String account = stringRedisTemplate.opsForValue().get(
                 RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode", "code", code)
         );
         if (account!=null) {
-            throw new BusinessException("验证失败", 401);
+            throw new BusinessException("验证失败", 406);
         }
         // 验证码验证成功，删除redis中的验证码
         stringRedisTemplate.delete(RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "verifyCode","account", user.getUserId()));

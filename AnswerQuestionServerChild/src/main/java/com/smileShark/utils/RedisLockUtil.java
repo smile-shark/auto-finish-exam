@@ -55,6 +55,12 @@ public class RedisLockUtil {
     public void setCourseSearchLock(String account,String value){
         stringRedisTemplate.opsForValue().set(RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "courseSearchLock", account), value, 10, TimeUnit.MINUTES);
     }
+    /**
+     * 清理课程搜索锁
+     */
+    public void clearCourseSearchLock(String account){
+        stringRedisTemplate.delete(RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "courseSearchLock", account));
+    }
 
 
 

@@ -102,7 +102,7 @@ export default {
       }
       this.loading = true;
       axios
-        .post("/javaSever/questionAndAnswer/page-list", {
+        .post(utils.getProxyUrl("/questionAndAnswer/page-list"), {
           question: this.searchStr,
           index: this.pageIndex,
         })
@@ -180,7 +180,7 @@ export default {
   width: 240px;
   height: 42px;
   line-height: 42px;
-  padding: 016px;
+  padding: 16px;
   padding-right: 42px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background-color: #ffffff;

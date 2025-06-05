@@ -132,7 +132,7 @@ export default {
       };
       this.start = true;
       axios
-        .post("/javaSever/questionAndAnswer/teacher-course-test-exam",
+        .post(utils.getProxyUrl("/questionAndAnswer/teacher-course-test-exam"),
             {
                 "courseId": this.chourseId
             }
@@ -143,7 +143,7 @@ export default {
             // 如果错题数量大于0就获取答案
             if (this.finishCount.noAnswerCount > 0) {
               axios
-                .post("/javaSever/questionAndAnswer/teacher-save-answer",{},{
+                .post(utils.getProxyUrl("/questionAndAnswer/teacher-save-answer"),{},{
                     params:{
                         "courseId": this.chourseId
                     }
@@ -165,7 +165,7 @@ export default {
     },
   },
   mounted() {
-    axios.get("/javaSever/course/list").then((res) => {
+    axios.get(utils.getProxyUrl("/course/list")).then((res) => {
       if (res.data.code != 200) {
         this.$message({
           message: res.data.message,

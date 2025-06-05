@@ -95,7 +95,7 @@
 <script>
 /* eslint-disable */
 import axios from "@/axios";
-let setIntervalContiner = null;
+import { utils } from "@/utils/globalUtils";
 export default {
   data() {
     return {
@@ -145,7 +145,7 @@ export default {
       this.form.selectSubsectionName = "";
       this.subsectionList = [];
       axios
-        .get("/javaSever/chapter/list-by-course-id", {
+        .get(utils.getProxyUrl("/chapter/list-by-course-id"), {
           params: {
             courseId: this.form.selectCourseName,
           },
@@ -169,7 +169,7 @@ export default {
       this.form.selectSubsectionName = "";
       this.subsectionList = [];
       axios
-        .get("/javaSever/subsection/list-by-chapter-id", {
+        .get(utils.getProxyUrl("/subsection/list-by-chapter-id"), {
           params: {
             chapterId: this.form.selectChapterName,
           },
@@ -246,7 +246,7 @@ export default {
       this.isStart = true;
       axios
         .post(
-          "/javaSever/questionAndAnswer/need-question-list",
+          utils.getProxyUrl("/questionAndAnswer/need-question-list"),
           {
             courseId: this.form.selectCourseName,
             chapterId: this.form.selectChapterName,
@@ -284,7 +284,7 @@ export default {
       }
       axios
         .post(
-          "/javaSever/questionAndAnswer/normal-exam-finish",
+          utils.getProxyUrl("/questionAndAnswer/normal-exam-finish"),
           this.subsectionIdList
         )
         .then((res) => {
@@ -306,7 +306,7 @@ export default {
           // 存储答案
           if (localStorage.getItem("identity") == 0 && this.finishCount.noAnswerCount > 0) {
             axios
-              .post("/javaSever/questionAndAnswer/save-answer")
+              .post(utils.getProxyUrl("/questionAndAnswer/save-answer"))
               .then((res) => {
                 if (res.data.code == 200) {
                   this.$message({
@@ -342,7 +342,7 @@ export default {
   },
   mounted() {
     axios
-      .get("/javaSever/course/list")
+      .get(utils.getProxyUrl("/course/list"))
       .then((res) => {
         if (res.data.code != 200) {
           this.loading = false;
@@ -362,7 +362,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .el-form-item {
   width: 300px;
   display: inline-block;

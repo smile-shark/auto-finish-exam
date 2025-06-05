@@ -42,12 +42,7 @@ export default {
 }
 </script>
 
-<style>
-*{
-    margin: 0;
-    padding: 0;
-}
-
+<style scoped>
 .el-carousel__item:nth-child(2n) {
   background-color: #80ea6e;
 }

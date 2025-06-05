@@ -1,9 +1,9 @@
 /* eslint-disable */
 import axios from 'axios'
-import  Vue  from 'vue'
 import router from "@/router/index"
 
 const axiosInstance = axios.create({
+    // baseURL: window.location.origin,
     timeout: 60*1000, // 请求超时时间
     headers: {
         'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ axiosInstance.interceptors.request.use(
 );
 axiosInstance.interceptors.response.use(
     config=>{
-        if(config.data.message=="身份验证失败" || config.data.message=="请先登录"){
+        if(config.data.code==401){
             setTimeout(()=>{
                 localStorage.removeItem('token')
                 router.push('/login')

@@ -47,5 +47,8 @@ export const utils = {
     }else{
       return num;
     }
+  },
+  getProxyUrl(url){
+    return ''+url
   }
 };

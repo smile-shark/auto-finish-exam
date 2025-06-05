@@ -90,4 +90,6 @@ public class Constant {
     // another
     @Value("${another.url.EARLY_PAPER_URL}")
     public String EARLY_PAPER_URL;
+    @Value("${shiro.ws.server.url}")
+    public String SHIRO_WS_SERVER_URL;
 }

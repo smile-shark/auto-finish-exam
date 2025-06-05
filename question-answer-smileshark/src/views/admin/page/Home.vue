@@ -65,28 +65,28 @@ export default {
   },
   mounted() {
     try {
-      axios.get("/javaSever/user/active-count").then((res) => {
+      axios.get(utils.getProxyUrl("/user/active-count")).then((res) => {
         if (res.data.code == 200) {
           this.activeCustomerTotal = res.data.data;
         } else {
           this.$message.error(res.data.message);
         }
       });
-      axios.get("/javaSever/user/count").then((res) => {
+      axios.get(utils.getProxyUrl("/user/count")).then((res) => {
         if (res.data.code == 200) {
           this.customerTotal = res.data.data;
         } else {
           this.$message.error(res.data.message);
         }
       });
-      axios.get("/javaSever/questionAndAnswer/count").then((res) => {
+      axios.get(utils.getProxyUrl("/questionAndAnswer/count")).then((res) => {
         if (res.data.code == 200) {
           this.questionTotal = res.data.data;
         } else {
           this.$message.error(res.data.message);
         }
       });
-      axios.get("/javaSever/course/count").then(res=>{
+      axios.get(utils.getProxyUrl("/course/count")).then(res=>{
                 if (res.data.code == 200) {
           this.courseTotal = res.data.data;
         } else {

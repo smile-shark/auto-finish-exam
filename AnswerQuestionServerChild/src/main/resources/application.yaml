@@ -1,15 +1,26 @@
+docker:
+  mysql-address: ${MYSQL_ADDRESS:localhost:3306}
+  mysql-username: ${MYSQL_USERNAME:root}
+  mysql-password: ${MYSQL_PASSWORD:123456}
+  redis-host: ${REDIS_ADDRESS:localhost}
+  redis-port: ${REDIS_PORT:6380}
+  redis-password: ${REDIS_PASSWORD:123456}
+  qq-group-id: ${QQ_GROUP_ID:958803816}
 spring:
+  web:
+    resources:
+      static-locations: classpath:/static/
   datasource:
-    url: jdbc:mysql://localhost:3306/school_question_data?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
-    username: root
-    password: 123456
+    url: jdbc:mysql://${docker.mysql-address}/school_question_data?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: ${docker.mysql-username}
+    password: ${docker.mysql-password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6380
+      host: ${docker.redis-host}
+      port: ${docker.redis-port}
       database: 0
-      password: 123456
+      password: ${docker.redis-password}
       lettuce:
         pool:
           max-active: 8 # 最大连接
@@ -24,9 +35,9 @@ shiro:
   ws:
     server:
       enable: true
-      url: "/rebot"
+      url: "/shark-bot"
 rebot:
-  handler-groups: 958803816 # 监听的群号
+  handler-groups: ${docker.qq-group-id} # 监听的群号
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true # 驼峰命名规则

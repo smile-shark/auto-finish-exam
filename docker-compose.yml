@@ -1,0 +1,64 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: sharktool-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: sharktool  # 数据库root密码
+      MYSQL_DATABASE: school_question_data  # 数据库名
+      MYSQL_USER: sharktool  # 用户名
+      MYSQL_PASSWORD: sharktool  # 密码
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d  # 挂载初始化脚本目录
+    ports:
+      - "11407:3306"
+    restart: always
+    networks:
+      - sharktool-network
+
+  redis:
+    image: redis:latest
+    container_name: sharktool-redis
+    ports:
+      - "11408:6379"
+    command: ["--appendonly", "yes", "--requirepass", "sharktool"]
+    networks:
+      - sharktool-network
+    restart: always
+
+  
+  napcat:
+    environment:
+        - NAPCAT_UID=1000
+        - NAPCAT_GID=1000
+    ports:
+        - 3000:3000
+        - 3001:3001
+        - 6099:6099
+    container_name: sharktool-napcat
+    restart: always
+    image: mlikiowa/napcat-docker:latest
+    networks:
+      - sharktool-network
+
+  sharktool:
+    environment:
+      - MYSQL_ADDRESS=sharktool-mysql:3306  # mysql地址
+      - MYSQL_USERNAME=sharktool  # mysql用户名
+      - MYSQL_PASSWORD=sharktool  # mysql密码
+      - REDIS_ADDRESS=sharktool-redis  # redis地址
+      - REDIS_PORT=6379  # redis端口
+      - REDIS_PASSWORD=sharktool  # redis密码
+      - QQ_GROUP_ID=958803816  # QQ群号
+    ports:
+      - 18080:8080
+    container_name: sharktool
+    restart: always
+    image: smilesharklx/sharktool:latest
+    networks:
+      - sharktool-network
+      
+networks:
+  sharktool-network:
+    driver: bridge

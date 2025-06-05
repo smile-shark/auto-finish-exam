@@ -26,7 +26,7 @@ public class TokenInterceptor implements HandlerInterceptor {
         String token = request.getHeader("Authorization");
         if(token == null){
             // 验证失败返回401
-            throw new BusinessException("token为空");
+            throw new BusinessException("token为空", 401);
         }
         if(token.startsWith("Bearer ")){
             token = tokenUtil.removeBearer(token);
@@ -37,15 +37,15 @@ public class TokenInterceptor implements HandlerInterceptor {
             boolean verifyResult = tokenUtil.verifyToken(token);
             if(!verifyResult){
                 // 验证失败返回401
-                throw new BusinessException("token验证失败");
+                throw new BusinessException("token验证失败", 401);
             }
             // 3. 解析token获取用户信息
             user = tokenUtil.parseToken(token, User.class);
         }catch (ValidateException e){
-            throw new BusinessException("token已过期");
-        } catch (IllegalAccessException | InstantiationException e) {
+            throw new BusinessException("token已过期", 401);
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("token验证通过，解析失败");
+            throw new BusinessException("token解析失败",401);
         }
         userThreadLocal.set(user);
         return true;
@@ -57,5 +57,8 @@ public class TokenInterceptor implements HandlerInterceptor {
     }
     public static User getUser() {
         return userThreadLocal.get();
+    }
+    public static void setUser(User user) {
+        userThreadLocal.set(user);
     }
 }

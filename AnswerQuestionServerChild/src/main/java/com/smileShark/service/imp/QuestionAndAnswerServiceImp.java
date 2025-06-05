@@ -2,7 +2,6 @@ package com.smileShark.service.imp;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.math.MathUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smileShark.common.Result;
@@ -14,6 +13,7 @@ import com.smileShark.entity.Course;
 import com.smileShark.entity.QuestionAndAnswer;
 import com.smileShark.entity.Subsection;
 import com.smileShark.entity.User;
+import com.smileShark.entity.robot.RobotExam;
 import com.smileShark.entity.school.SchoolResult;
 import com.smileShark.entity.school.request.SchoolStudentSubsectionExamAnswerRequest;
 import com.smileShark.entity.school.request.SchoolTeacherSubsectionExamAnswerRequest;
@@ -84,7 +84,6 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
     @Override
     public Result selectNeedAnswerQuestions(Request request) {
 
-        System.out.println(request);
         User user = TokenInterceptor.getUser();
         if (user.getIdentity() == 2) {
             user.setUserId(request.getUserId());
@@ -92,136 +91,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
             user.setIdentity(request.getIdentity());
         }
         List<Subsection> subsections = new CopyOnWriteArrayList<>();
-        Integer examCount = 0;
-
-        // 1. 判断用户的身份
-        if (user.getIdentity() == 0) {
-            // 学生登录
-            loginTokenInfo = userService.getStudentToken(user.getUserId(), user.getUserPassword());
-            // 如果courseId不为空，先获取到courseInfo
-            if (request.getCourseId() != null && !request.getCourseId().isEmpty()) {
-                // 获取课程详细
-                courseInfo = courseService.getSchoolStudentCourseInfoByCourseId(loginTokenInfo, request.getCourseId());
-            }
-            if (request.getSubsectionId() != null && !request.getSubsectionId().isEmpty()) {
-                // 如果 subsectionId 不为空，返回指定小节的所有问题
-                for (SchoolStudentCourseInfoResponse.Chapter chapter : courseInfo.getChapters()) {
-                    // 先找到章节
-                    if (chapter.getId().equals(request.getChapterId())) {
-                        for (SchoolStudentCourseInfoResponse.Knowledge knowledge : chapter.getKnowledgeList()) {
-                            // 判断指定的小节是否需要考试
-                            if (knowledge.getId().equals(request.getSubsectionId())) {
-                                Subsection subsection = getSubsection(knowledge);
-                                if (subsection != null) {
-                                    subsections.add(subsection);
-                                    examCount += knowledge.getExamNum();
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-            } else if (request.getChapterId() != null && !request.getChapterId().isEmpty()) {
-                // 如果 chapterId 不为空，返回指定章节的所有问题
-                for (SchoolStudentCourseInfoResponse.Chapter chapter : courseInfo.getChapters()) {
-                    // 判断指定的章节是否需要考试，完成后就退出循环
-                    if (chapter.getId().equals(request.getChapterId()))
-                        for (SchoolStudentCourseInfoResponse.Knowledge knowledge : chapter.getKnowledgeList()) {
-                            // 判断指定的小节是否需要考试
-                            Subsection subsection = getSubsection(knowledge);
-                            if (subsection != null) {
-                                subsections.add(subsection);
-                                examCount += knowledge.getExamNum();
-                            }
-                        }
-                    break;
-                }
-            } else if (request.getCourseId() != null && !request.getCourseId().isEmpty()) {
-                // 如果 courseId 不为空，返回指定课程的所有问题
-                examCount = getIntegerStudent(subsections, examCount, courseInfo);
-            } else {
-                // 如果 courseId 为空，返回全部课程的所有问题
-                SchoolStudentHaveCourseResponse schoolStudentHaveCourse = courseService.getSchoolStudentHaveCourse(loginTokenInfo);
-                Collection<SchoolStudentHaveCourseResponse.Course> courses = CollUtil.addAll(schoolStudentHaveCourse.getUnfinished(), schoolStudentHaveCourse.getCompleteList());
-                // 获取课程下面需要考试的小节
-                List<Future<SchoolStudentCourseInfoResponse>> futures = new ArrayList<>();
-                for (SchoolStudentHaveCourseResponse.Course course : courses) {
-                    // 判断课程中是否还有需要考试的题目
-                    if (course.getPassCount() < course.getTotalKonwledge()) {
-                        // 获取详细的课程信息，使用线程池加快获取进度
-                        Future<SchoolStudentCourseInfoResponse> future = ThreadUtils.executorService.submit(
-                                () -> courseService.getSchoolStudentCourseInfoByCourseId(loginTokenInfo, course.getCourseID()));
-                        futures.add(future);
-                    }
-                }
-                try {
-                    for (Future<SchoolStudentCourseInfoResponse> future : futures) {
-                        SchoolStudentCourseInfoResponse courseInfo = future.get();// 获取结果
-                        examCount = getIntegerStudent(subsections, examCount, courseInfo);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else if (user.getIdentity() == 1) {
-            // 教师登录
-            loginTokenInfo = userService.getTeacherToken(user.getUserId(), user.getUserPassword());
-            // 获取到课程信息
-            if (request.getCourseId() == null || request.getCourseId().isEmpty()) {
-                // 教师的courseId不能为空，为空会将全部课程都回答了
-                return Result.error("教师身份，请指定课程");
-            }
-            SchoolTeacherCourseInfoResponse teacherCourseInfo = courseService.getSchoolTeacherCourseInfoByCourseId(loginTokenInfo, request.getCourseId());
-
-            // 判断
-            if (request.getSubsectionId() != null && !request.getSubsectionId().isEmpty()) {
-                // 如果 subsectionId 不为空，返回指定小节的所有问题
-                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
-                    if (chapter.getId().equals(request.getChapterId())) {
-                        for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
-                            if (teacherKP.getKpid().equals(request.getSubsectionId())) {
-                                Subsection subsection = getSubsection(teacherKP);
-                                if (subsection != null) {
-                                    subsections.add(subsection);
-                                    examCount += 10;
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-            } else if (request.getChapterId() != null && !request.getChapterId().isEmpty()) {
-                // 如果 chapterId 不为空，返回指定章节的所有问题
-                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
-                    if (chapter.getId().equals(request.getChapterId())) {
-                        for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
-                            Subsection subsection = getSubsection(teacherKP);
-                            if (subsection != null) {
-                                subsections.add(subsection);
-                                examCount += 10;
-                            }
-                        }
-                        break;
-                    }
-                }
-            } else if (request.getCourseId() != null && !request.getCourseId().isEmpty()) {
-                // 如果 courseId 不为空，返回指定课程的所有问题
-                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
-                    for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
-                        Subsection subsection = getSubsection(teacherKP);
-                        if (subsection != null) {
-                            subsections.add(subsection);
-                            examCount += 10;
-                        }
-                    }
-                }
-            }
-            System.out.println(teacherCourseInfo);
-        } else {
-            return Result.error("身份错误");
-        }
+        int examCount = getExamSubsections(user, request.getCourseId(), request.getChapterId(), request.getSubsectionId(), subsections);
         return Result.success("考试信息获取成功", new TotalAndData(examCount, subsections));
     }
 
@@ -301,7 +171,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                     MapUtil.of("teacherCourseExamID", data.getTeacherCourseExamID())
             );
         }
-        return Result.success("考试结束", new FinishQuestionCount(rightAnswerCount.get(), noAnswerCount.get()));
+        return Result.success("考试结束", new FinishQuestionCount(rightAnswerCount.get(), noAnswerCount.get(), null));
     }
 
     @Override
@@ -322,7 +192,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                     SchoolStudentSubsectionQuestionListResponse studentExamInfo = getStudentSubsectionQuestionById(loginTokenInfo, subsection.getSubsectionId());
                     if (studentExamInfo == null) {
                         return null;
-                        }
+                    }
                     // 提交线程认为考试题目
                     List<Future<?>> examFutures = new ArrayList<>();
                     for (SchoolStudentSubsectionQuestionListResponse.Question question : studentExamInfo.getQuestionList()) {
@@ -471,7 +341,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                 }
             }
         }
-        return Result.success("考试结束", new FinishQuestionCount(rightAnswerCount.get(), noAnswerCount.get()));
+        return Result.success("考试结束", new FinishQuestionCount(rightAnswerCount.get(), noAnswerCount.get(), null));
     }
 
     /**
@@ -649,13 +519,60 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
             noAnswerCountOut += noAnswerCount;
             rightAnswerCountOut += studentExamInfo.getQuestionList().size() - noAnswerCount;
         }
-        return Result.success("考试完成", new FinishQuestionCount(rightAnswerCountOut, noAnswerCountOut));
+        return Result.success("考试完成", new FinishQuestionCount(rightAnswerCountOut, noAnswerCountOut, null));
+    }
+
+    @Override
+    public FinishQuestionCount reBotFinishNormalExam(RobotExam examInfo) {
+        // 查询用户信息
+        User user = userService.lambdaQuery().eq(User::getQqAccount, examInfo.getQqAccount()).one();
+
+        TokenInterceptor.setUser(user);
+        if (user.getIdentity() == 0) {
+            loginTokenInfo = userService.getStudentToken(user.getUserId(), user.getUserPassword());
+        } else if (user.getIdentity() == 1) {
+            loginTokenInfo = userService.getTeacherToken(user.getUserId(), user.getUserPassword());
+        } else {
+            return null;
+        }
+
+        // 获取考试的列表
+        List<Subsection> subsections = new ArrayList<>();
+        int examCount = getExamSubsections(user, examInfo.getCourseId(), examInfo.getChapterId(), examInfo.getSubsectionId(), subsections);
+        // 开始考试
+        FinishQuestionCount countData = (FinishQuestionCount) finishNormalExam(subsections).getData();
+        countData.setTotalCount(examCount);
+        ThreadUtils.executorService.submit(() -> {
+            // 清理缓存在Redis中的数据
+            redisLockUtil.clearCourseSearchLock(examInfo.getQqAccount());
+            // 如果有错题就去保存答案
+            if (countData.getNoAnswerCount() > 0) {
+                saveAnswer(user, countData.getTotalCount());
+            }
+        });
+        return countData;
     }
 
     private void saveAnswer(User user, int size) {
         SchoolLoginResponse userToken = userService.getStudentToken(user.getUserId(), user.getUserPassword());
-        List<SchoolStudentMistakesResponse.Question> questions = getQuestions(userToken);
+        List<SchoolStudentMistakesResponse.Question> questions = getQuestions(userToken,size);
         this.saveQuestions(questions);
+    }
+
+    private List<SchoolStudentMistakesResponse.Question> getQuestions(SchoolLoginResponse userToken, int size) {
+
+        HashMap<String, Integer> map = MapUtil.of("PageSize", 0);
+        map.put("PageIndex", size);
+        return restTemplateUtil.get(
+                constant.STUDENT_MISTAKES_URL,
+                HttpMethod.GET,
+                MediaType.APPLICATION_JSON,
+                null,
+                new ParameterizedTypeReference<SchoolResult<SchoolStudentMistakesResponse>>() {
+                },
+                TokenUtil.montage(userToken),
+                map
+        ).getData().getData();
     }
 
     private List<Subsection> selectNeedAnswerQuestions(User user, String courseId) {
@@ -690,6 +607,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
     }
 
     private Subsection getSubsection(SchoolStudentCourseInfoResponse.Knowledge knowledge) {
+
         Subsection subsection = null;
         // 判断是否需要考试
         if (knowledge.getTestMemberInfo() == null) {
@@ -817,12 +735,10 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         // 如果没有就去数据库中查询
         QuestionAndAnswer questionAndAnswer = lambdaQuery().eq(QuestionAndAnswer::getQuestionId, questionId).one();
         // 使用异步将查询到的数据写入到redis中
-        ThreadUtils.executorService.submit(() -> {
-            stringRedisTemplate.opsForValue().set(
-                    RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "selectAnswer", questionId),
-                    JSONUtil.toJsonStr(questionAndAnswer)
-            );
-        });
+        ThreadUtils.executorService.submit(() -> stringRedisTemplate.opsForValue().set(
+                RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME, "selectAnswer", questionId),
+                JSONUtil.toJsonStr(questionAndAnswer)
+        ));
         // 返回得到的数据
         return questionAndAnswer;
     }
@@ -870,5 +786,145 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
             }
         }
         return questions;
+    }
+
+    private int getExamSubsections(User user, String courseId, String chapterId, String subsectionId, List<Subsection> subsections) {
+        Integer examCount = 0;
+
+        // 1. 判断用户的身份
+        if (user.getIdentity() == 0) {
+            // 学生登录
+            loginTokenInfo = userService.getStudentToken(user.getUserId(), user.getUserPassword());
+            // 如果courseId不为空，先获取到courseInfo
+            if (courseId != null && !courseId.isEmpty()) {
+                // 获取课程详细
+                courseInfo = courseService.getSchoolStudentCourseInfoByCourseId(loginTokenInfo, courseId);
+                System.out.println(user);
+                System.out.println(courseId);
+                System.out.println(chapterId);
+                System.out.println(subsectionId);
+                System.out.println(JSONUtil.toJsonStr(courseInfo));
+            }
+            if (subsectionId != null && !subsectionId.isEmpty()) {
+                // 如果 subsectionId 不为空，返回指定小节的所有问题
+                for (SchoolStudentCourseInfoResponse.Chapter chapter : courseInfo.getChapters()) {
+                    // 先找到章节
+                    if (chapter.getId().equals(chapterId)) {
+                        for (SchoolStudentCourseInfoResponse.Knowledge knowledge : chapter.getKnowledgeList()) {
+                            // 判断指定的小节是否需要考试
+                            if (knowledge.getId().equals(subsectionId)) {
+                                Subsection subsection = getSubsection(knowledge);
+                                if (subsection != null) {
+                                    subsections.add(subsection);
+                                    examCount += knowledge.getExamNum();
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else if (chapterId != null && !chapterId.isEmpty()) {
+                // 如果 chapterId 不为空，返回指定章节的所有问题
+                for (SchoolStudentCourseInfoResponse.Chapter chapter : courseInfo.getChapters()) {
+                    // 判断指定的章节是否需要考试，完成后就退出循环
+                    if (chapter.getId().equals(chapterId)) {
+                        for (SchoolStudentCourseInfoResponse.Knowledge knowledge : chapter.getKnowledgeList()) {
+                            // 判断指定的小节是否需要考试
+                            Subsection subsection = getSubsection(knowledge);
+                            if (subsection != null) {
+                                subsections.add(subsection);
+                                examCount += knowledge.getExamNum();
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else if (courseId != null && !courseId.isEmpty()) {
+                // 如果 courseId 不为空，返回指定课程的所有问题
+                examCount = getIntegerStudent(subsections, examCount, courseInfo);
+            } else {
+                // 如果 courseId 为空，返回全部课程的所有问题
+                SchoolStudentHaveCourseResponse schoolStudentHaveCourse = courseService.getSchoolStudentHaveCourse(loginTokenInfo);
+                Collection<SchoolStudentHaveCourseResponse.Course> courses = CollUtil.addAll(schoolStudentHaveCourse.getUnfinished(), schoolStudentHaveCourse.getCompleteList());
+                // 获取课程下面需要考试的小节
+                List<Future<SchoolStudentCourseInfoResponse>> futures = new ArrayList<>();
+                for (SchoolStudentHaveCourseResponse.Course course : courses) {
+                    // 判断课程中是否还有需要考试的题目
+                    if (course.getPassCount() < course.getTotalKonwledge()) {
+                        // 获取详细的课程信息，使用线程池加快获取进度
+                        Future<SchoolStudentCourseInfoResponse> future = ThreadUtils.executorService.submit(
+                                () -> courseService.getSchoolStudentCourseInfoByCourseId(loginTokenInfo, course.getCourseID()));
+                        futures.add(future);
+                    }
+                }
+                try {
+                    for (Future<SchoolStudentCourseInfoResponse> future : futures) {
+                        SchoolStudentCourseInfoResponse courseInfo = future.get();// 获取结果
+                        examCount = getIntegerStudent(subsections, examCount, courseInfo);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (user.getIdentity() == 1) {
+            // 教师登录
+            loginTokenInfo = userService.getTeacherToken(user.getUserId(), user.getUserPassword());
+            // 获取到课程信息
+            if (courseId == null || courseId.isEmpty()) {
+                // 教师的courseId不能为空，为空会将全部课程都回答了
+                throw new BusinessException("教师身份，请指定课程");
+            }
+            SchoolTeacherCourseInfoResponse teacherCourseInfo = courseService.getSchoolTeacherCourseInfoByCourseId(loginTokenInfo, courseId);
+
+            // 判断
+            if (subsectionId != null && !subsectionId.isEmpty()) {
+                // 如果 subsectionId 不为空，返回指定小节的所有问题
+                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
+                    if (chapter.getId().equals(chapterId)) {
+                        for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
+                            if (teacherKP.getKpid().equals(subsectionId)) {
+                                Subsection subsection = getSubsection(teacherKP);
+                                if (subsection != null) {
+                                    subsections.add(subsection);
+                                    examCount += 10;
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else if (chapterId != null && !chapterId.isEmpty()) {
+                // 如果 chapterId 不为空，返回指定章节的所有问题
+                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
+                    if (chapter.getId().equals(chapterId)) {
+                        for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
+                            Subsection subsection = getSubsection(teacherKP);
+                            if (subsection != null) {
+                                subsections.add(subsection);
+                                examCount += 10;
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // 如果 courseId 不为空，返回指定课程的所有问题
+                for (SchoolTeacherCourseInfoResponse.Chapter chapter : teacherCourseInfo.getChapterList()) {
+                    for (SchoolTeacherCourseInfoResponse.TeacherKP teacherKP : chapter.getTeacherKPList()) {
+                        Subsection subsection = getSubsection(teacherKP);
+                        if (subsection != null) {
+                            subsections.add(subsection);
+                            examCount += 10;
+                        }
+                    }
+                }
+            }
+
+        } else {
+            throw new BusinessException("身份错误",401);
+        }
+        return examCount;
     }
 }

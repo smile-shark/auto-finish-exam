@@ -290,7 +290,7 @@ export default {
       };
       this.questionCount = 0;
       axios
-        .post("/javaSever/questionAndAnswer/admin-need-question-list", {
+        .post(utils.getProxyUrl("/questionAndAnswer/admin-need-question-list"), {
           courseId: this.chourseId,
           userId: this.assignExamUser.userId,
           userPassword: this.assignExamUser.userPassword,
@@ -308,7 +308,7 @@ export default {
             // 提交题目开始考试
             axios
               .post(
-                "/javaSever/questionAndAnswer/admin-normal-exam-finish",
+                utils.getProxyUrl("/questionAndAnswer/admin-normal-exam-finish"),
                 res.data.data.data,
                 {
                   params: {
@@ -349,7 +349,7 @@ export default {
       }
       // 获取课程列表
       await axios
-        .get("/javaSever/user/page-list", {
+        .get(utils.getProxyUrl("/user/page-list"), {
           params: {
             page: this.page,
             size: this.size,
@@ -386,7 +386,7 @@ export default {
         .then(() => {
           // 删除用户
           axios
-            .delete("/javaSever/user", {
+            .delete(utils.getProxyUrl("/user"), {
               params: {
                 userId: userId,
               },
@@ -408,7 +408,7 @@ export default {
     loginTest(row) {
       row.loginTest = "start";
       axios
-        .post("/javaSever/user/login", {
+        .post(utils.getProxyUrl("/user/login"), {
           userId: row.userId,
           userPassword: row.userPassword,
           identity: row.identity,
@@ -434,7 +434,7 @@ export default {
       this.saveAnswerGlobalLock = true;
       // 保存答案
      await axios
-        .post("/javaSever/questionAndAnswer/admin-save-answer", {
+        .post(utils.getProxyUrl("/questionAndAnswer/admin-save-answer"), {
           userId: row.userId,
           userPassword: row.userPassword,
           userIdentity: row.identity,
@@ -470,7 +470,7 @@ export default {
   },
   mounted() {
     this.getUserList();
-    axios.get("/javaSever/course/list").then((res) => {
+    axios.get(utils.getProxyUrl("/course/list")).then((res) => {
       if (res.data.code == 200) {
         this.courseList = res.data.data;
       } else {

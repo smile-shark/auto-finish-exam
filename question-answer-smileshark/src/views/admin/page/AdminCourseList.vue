@@ -95,7 +95,7 @@ export default {
       }
       // 获取课程列表
       axios
-        .get("/javaSever/course/page-list", {
+        .get(utils.getProxyUrl("/course/page-list"), {
           params: {
             page: this.page,
             size: this.size,
@@ -117,7 +117,7 @@ export default {
     },
     getChapterAndSection(row) {
       row.getDetail='start'
-      axios.post("/javaSever/course/admin-course-detail",{
+      axios.post(utils.getProxyUrl("/course/admin-course-detail"),{
         courseId: row.courseId
       }).then((res) => {
         if (res.data.code == 200) {

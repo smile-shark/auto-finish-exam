@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <link rel="stylesheet" type="text/css" href="../../css/card.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="@/css/card.css" /> -->
     <div class="out-card">
       <div class="loginBox card">
       <h2>
@@ -18,9 +18,9 @@
         </div>
         <div>
           <el-radio-group v-model="identity">
-            <el-radio :label="0">学生</el-radio>
-            <el-radio :label="1">教师</el-radio>
-            <el-radio :label="2">管理员</el-radio>
+            <el-radio :label="0" style="padding:2px">学生</el-radio>
+            <el-radio :label="1" style="padding:2px">教师</el-radio>
+            <el-radio :label="2" style="padding:2px">管理员</el-radio>
           </el-radio-group>
         </div>
         <button class="btn" @click.prevent="login">
@@ -33,11 +33,30 @@
       </form>
     </div>
     </div>
+        <el-dialog
+      :visible.sync="dialogVisible"
+      title="QQ群：958803816"
+      width="23%"
+    >
+    <img src="@/assets/image/qq-group.png" style="width:20vw;"/>
+    <p>
+      在qq群中发出以下消息以验证身份：
+    </p>
+    <div style="display: flex;align-items: center;justify-content: center;">
+        <span style="width:50%;background-color: #415a94;padding:10px;color:white;font-weight: bold;font-size: 20px;text-align: center;margin:5px">
+          {{ verifyCode }}
+        </span>
+    </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmDialog" style="color: white;background:#21b85f">验 证</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import axios from "@/axios";
+import { utils } from "@/utils/globalUtils";
 /* eslint-disable */
 export default {
   data() {
@@ -45,10 +64,29 @@ export default {
       userName: "",
       password: "",
       identity: 0,
+      dialogVisible: false, // 控制弹出框的显示和隐藏
+      verifyCode:""
     };
   },
   methods: {
+    confirmDialog() {
+      // 确认操作
+      axios.get(utils.getProxyUrl('/user/verify-code')).then(res=>{
+        if(res.data.code==200){
+            this.getUserInfo();
+            this.dialogVisible = false;
+            this.$message.success(res.data.message)
+        }else{
+          this.errorMessage(res.data.message);
+        }
+      })
+    },
     login() {
+      // 验证非空
+      if (this.userName == "" || this.password == "") {
+        this.errorMessage("用户名或密码不能为空");
+        return;
+      }
       const loading = this.$loading({
         lock: true,
         text: "登陆中...",
@@ -56,7 +94,7 @@ export default {
         background: "rgba(0, 0, 0, 0.7)",
       });
       axios
-        .post("/javaSever/user/login", {
+        .post(utils.getProxyUrl("/user/login"), {
           identity: this.identity,
           userId: this.userName,
           userPassword: this.password,
@@ -64,11 +102,26 @@ export default {
         .then((res) => {
           //登陆成功就转跳页面,失败就输出返回信息
           if (res.data.success) {
+            loading.close();
+              localStorage.setItem("token", res.data.data);
+              // 登录成功弹出二维码框
+              if(this.identity != 2){
+                // 弹出群聊框已验证身份
+                // 到这里说明账号和密码都是正确的，这里就可以生成验证码了，发送一个请求对对应的账号创建一个验证码
+                axios.get(utils.getProxyUrl("/user/create-code")).then(res=>{
+                  if(res.data.code==200){
+                    this.verifyCode = res.data.data;
+                    this.dialogVisible = true;
+                  }else{
+                    this.errorMessage(res.data.message);
+                  }
+                })
+
+                return;
+              }
             // 成功后就去获取用户的信息
             this.getUserInfo();
-            localStorage.setItem("token", res.data.data);
             this.trueMessage(res.data.message);
-            loading.close();
           } else {
             this.errorMessage(res.data.message);
             loading.close();
@@ -95,7 +148,7 @@ export default {
       });
     },
     getUserInfo() {
-      axios.get("/javaSever/user/info").then((res) => {
+      axios.get(utils.getProxyUrl("/user/info")).then((res) => {
         if (res.data.success) {
           localStorage.setItem("userName", res.data.data.username);
           localStorage.setItem("identity", res.data.data.identity);
@@ -112,7 +165,7 @@ export default {
   },
   created() {
     if (localStorage.getItem("token")) {
-      axios.get("/javaSever/user/login-in").then((res) => {
+      axios.get(getProxyUrl("/user/login-in")).then((res) => {
         if (res.data.success) {
           this.getUserInfo();
         }
@@ -126,10 +179,6 @@ export default {
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-}
 
 a {
   text-decoration: none;

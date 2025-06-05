@@ -69,9 +69,9 @@ public class EarlyMorningReportUtil {
             return JSONUtil.toBean(json, News163OutResponse.class);
         }
         // 没有就去mySql中查询
-        json = earlyMorningReportService.lambdaQuery().eq(EarlyMorningReport::getOnDay, date).one().getData();
-        if(json != null) {
-            return JSONUtil.toBean(json, News163OutResponse.class);
+        EarlyMorningReport one = earlyMorningReportService.lambdaQuery().eq(EarlyMorningReport::getOnDay, date).one();
+        if(one != null) {
+            return JSONUtil.toBean(one.getData(), News163OutResponse.class);
         }
 
         if(!getEarlyMorningLock()){
