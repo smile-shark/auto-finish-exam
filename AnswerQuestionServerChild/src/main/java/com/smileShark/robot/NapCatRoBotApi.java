@@ -32,15 +32,6 @@ public class NapCatRoBotApi {
             GlobalBotUtil.bot = bot;
         }
     }
-    // 定时任务示例
-    @Scheduled(cron = "0 0 7 * * ?")
-    public void sendDailyMessage() {
-        GlobalBotUtil.bot.sendGroupMsg(
-                constant.REBOT_HANDLER_GROUPS,
-                "定时消息发送测试",
-                false
-        );
-    }
 
     // 私聊消息
     @PrivateMessageHandler

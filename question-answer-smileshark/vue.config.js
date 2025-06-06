@@ -6,8 +6,8 @@ module.exports = {
     port: 8081,
     proxy: {
       '/javaSever': {
-        // target: 'http://localhost:8080',
-        target: 'http://192.168.131.5:18080',
+        target: 'http://localhost:8080',
+        // target: 'http://192.168.131.5:18080',
         changeOrigin: true,
         pathRewrite: { '^/javaSever': '' },
       }

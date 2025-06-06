@@ -19,7 +19,7 @@
 -- Table structure for table `chapter`
 --
 
-use `school_question_data`
+use `school_question_data`;
 
 DROP TABLE IF EXISTS `chapter`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -144,7 +144,7 @@ CREATE TABLE `user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-insert into user (user_id,username,user_password) values ('AdminIsSmileShark','管理者','simple_password');
+insert into user (user_id,username,user_password,identity) values ('AdminIsSmileShark','管理者','simple_password',2);
 
 -- 授予用户远程访问权限
 CREATE USER IF NOT EXISTS 'sharktool'@'%' IDENTIFIED BY 'sharktool';

@@ -55,7 +55,7 @@ services:
       - 18080:8080
     container_name: sharktool
     restart: always
-    image: smilesharklx/sharktool:latest
+    image: smilesharklx/sharktool:2.1.0
     networks:
       - sharktool-network
       
