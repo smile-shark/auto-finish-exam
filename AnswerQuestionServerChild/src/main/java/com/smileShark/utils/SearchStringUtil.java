@@ -5,6 +5,6 @@ public class SearchStringUtil {
         if(input == null || input.isEmpty()){
             return "%";
         }
-        return  "%" + String.join("%", input.replaceAll("[ '<>&/()（）%_ ]", "").split("")) + "%";
+        return  "%" + String.join("%", input.replaceAll("[ '\"\\\\<>&/()（）%_ ]", "").split("")) + "%";
     }
 }

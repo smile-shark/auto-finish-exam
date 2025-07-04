@@ -553,7 +553,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         return countData;
     }
 
-    private void saveAnswer(User user, int size) {
+    public void saveAnswer(User user, int size) {
         SchoolLoginResponse userToken = userService.getStudentToken(user.getUserId(), user.getUserPassword());
         List<SchoolStudentMistakesResponse.Question> questions = getQuestions(userToken,size);
         this.saveQuestions(questions);
@@ -561,8 +561,8 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
 
     private List<SchoolStudentMistakesResponse.Question> getQuestions(SchoolLoginResponse userToken, int size) {
 
-        HashMap<String, Integer> map = MapUtil.of("PageSize", 0);
-        map.put("PageIndex", size);
+        HashMap<String, Integer> map = MapUtil.of("PageSize", size);
+        map.put("PageIndex", 1);
         return restTemplateUtil.get(
                 constant.STUDENT_MISTAKES_URL,
                 HttpMethod.GET,

@@ -106,7 +106,7 @@ docker compose up -d # 新版本docker
         - 18080:8080
       container_name: sharktool
       restart: always
-      image: smilesharklx/sharktool:2.1.0
+      image: smilesharklx/sharktool:2.1.1
       networks:
         - sharktool-network
         
@@ -128,7 +128,7 @@ docker run -d \
 -e QQ_GROUP_ID=QQ群号  # QQ群号
 --name sharktool
 --restart=always
-smilesharklx/sharktool:2.1.0
+smilesharklx/sharktool:2.1.1
 ```
 
 ### QQ机器人连接配置
@@ -146,3 +146,10 @@ smilesharklx/sharktool:2.1.0
 5. 启用
 
 ![image-20250606095146938](./images/image-20250606095146938.png)
+
+# 更新日志
+
+#### 2025/7/4
+
+1. 优化题目搜索算法，提升题目匹配准确度
+2. 修复获取空答案的问题

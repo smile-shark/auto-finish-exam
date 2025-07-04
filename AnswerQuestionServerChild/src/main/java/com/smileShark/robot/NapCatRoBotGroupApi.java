@@ -48,6 +48,7 @@ public class NapCatRoBotGroupApi {
     @GroupMessageHandler
     @MessageHandlerFilter(cmd = "help", at = AtEnum.NEED)
     public void onHelp(Bot bot, GroupMessageEvent event) {
+        System.out.println("help");
         if (globalBotUtil.groupIdVerify(event)) return;
         StringBuffer buffer = new StringBuffer();
         buffer.append("帮助菜单：\n");

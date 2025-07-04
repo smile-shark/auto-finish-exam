@@ -5,15 +5,15 @@ docker:
   redis-host: ${REDIS_ADDRESS:localhost}
   redis-port: ${REDIS_PORT:6380}
   redis-password: ${REDIS_PASSWORD:123456}
-  qq-group-id: ${QQ_GROUP_ID:958803816}
+  qq-group-id: ${QQ_GROUP_ID:905390619}
 spring:
   web:
     resources:
       static-locations: classpath:/static/
   datasource:
     url: jdbc:mysql://${docker.mysql-address}/school_question_data?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
-    username: ${docker.mysql-username}
-    password: ${docker.mysql-password}
+    username: ${docker.mysql-username:root}
+    password: ${docker.mysql-password:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
