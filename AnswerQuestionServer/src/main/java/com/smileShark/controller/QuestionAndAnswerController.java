@@ -106,7 +106,4 @@ public class QuestionAndAnswerController {
         questionAndAnswerService.saveAnswer(user);
         return Result.success("保存成功");
     }
-
-
-
 }

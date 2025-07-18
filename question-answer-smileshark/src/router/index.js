@@ -11,6 +11,7 @@ import AdminHome from '@/views/admin/AdminHome.vue'
 import Home from '@/views/admin/page/Home.vue'
 import AdminCourseList from '@/views/admin/page/AdminCourseList.vue'
 import AdminUserList from '@/views/admin/page/AdminUserList.vue'
+import AdminSportsCueWordsList from '@/views/admin/page/AdminSportsCueWordsList.vue'
 
 
 Vue.use(VueRouter)
@@ -75,6 +76,11 @@ const routes = [
         path: '/admin/userList',
         name: 'adminUserList',
         component: AdminUserList
+      },
+      {
+        path: '/admin/sportsCueWordsList',
+        name: 'adminSportsCueWordsList',
+        component: AdminSportsCueWordsList
       }
     ]
   }

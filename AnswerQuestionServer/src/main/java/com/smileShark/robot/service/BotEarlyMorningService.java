@@ -5,9 +5,13 @@ import com.mikuac.shiro.common.utils.MsgUtils;
 import com.mikuac.shiro.core.Bot;
 import com.mikuac.shiro.dto.event.message.GroupMessageEvent;
 import com.smileShark.entity.news163.News163OutResponse;
+import com.smileShark.exception.BusinessException;
 import com.smileShark.utils.EarlyMorningReportUtil;
+import com.smileShark.utils.ThreadUtils;
+import io.netty.util.internal.ThrowableUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smileShark.mapper.SubsectionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.smileShark.entity.Subsection">
+        <id column="subsection_id" property="subsectionId" />
+        <result column="subsection_name" property="subsectionName" />
+        <result column="course_id" property="courseId" />
+        <result column="chapter_id" property="chapterId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        subsection_id, subsection_name, course_id, chapter_id
+    </sql>
+
+</mapper>

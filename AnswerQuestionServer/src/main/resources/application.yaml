@@ -74,6 +74,7 @@ school:
     STUDENT_SUBSECTION_ANSWER_QUESTION_URL: https://ai.cqzuxia.com/evaluation/api/StudentEvaluate/SaveEvaluateAnswer
     STUDENT_SUBSECTION_EXAM_END_URL: https://ai.cqzuxia.com/evaluation/api/StudentEvaluate/SaveTestMemberInfo
     STUDENT_MISTAKES_URL: https://ai.cqzuxia.com/evaluation/api/StuCenter/GetFaultQuestionList
+    STUDENT_SING_IN_URL: https://ai.cqzuxia.com/growing/api/StuTask/SaveStuDailyAssignment
 
     TEACHER_LOGIN_URL: https://zxsz.cqzuxia.com/connect/token
     TEACHER_INFO_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCenter/GetTeacherInfo
@@ -101,7 +102,7 @@ another:
    search-chapter: searchChapter
    search-subsection: searchSubsection
    message-interceptor: messageInterceptor
-   verify-code: verifyCode
+   verify-code: verifyCode:code
 
 key:
   token:

@@ -84,10 +84,10 @@
               </el-submenu>
               <el-submenu index="">
                 <span slot="title"
-                  ><i class="el-icon-s-cooperation"></i>题目管理</span
+                  ><i class="el-icon-s-cooperation"></i>AI管理</span
                 >
-                <el-menu-item 
-                  >题目列表</el-menu-item
+                <el-menu-item index="/admin/sportsCueWordsList" 
+                  >运动提示词</el-menu-item
                 >
               </el-submenu>
               <el-submenu index="">

@@ -21,7 +21,6 @@ public class BotVerifyService {
         // 尝试在redis中去匹配这个验证码
         String account = stringRedisTemplate.opsForValue().get(
                 RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME,
-                        constant.VERIFY_CODE_REDIS_KEY,
                         constant.VERIFY_CODE_REDIS_KEY, message)
         );
         if (account != null) {
@@ -42,7 +41,6 @@ public class BotVerifyService {
             // 说明验证成功，将redis中对应的数据删除
             stringRedisTemplate.delete(
                     RedisKeyUtil.getSimpleKey(constant.PROJECT_NAME,
-                            constant.VERIFY_CODE_REDIS_KEY,
                             constant.VERIFY_CODE_REDIS_KEY, message)
             );
             // 发送成功消息

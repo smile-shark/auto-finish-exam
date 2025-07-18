@@ -40,6 +40,8 @@ public class Constant {
     public String STUDENT_SUBSECTION_EXAM_END_URL;
     @Value("${school.url.STUDENT_MISTAKES_URL}")
     public String STUDENT_MISTAKES_URL;
+    @Value("${school.url.STUDENT_SING_IN_URL}")
+    public String STUDENT_SING_IN_URL;
 
 
     @Value("${school.url.TEACHER_LOGIN_URL}")

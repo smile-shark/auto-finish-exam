@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smileShark.mapper.ChapterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.smileShark.entity.Chapter">
+        <id column="chapter_id" property="chapterId" />
+        <result column="chapter_title" property="chapterTitle" />
+        <result column="chapter_name" property="chapterName" />
+        <result column="course_id" property="courseId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        chapter_id, chapter_title, chapter_name, course_id
+    </sql>
+
+</mapper>

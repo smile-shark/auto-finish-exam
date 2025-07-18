@@ -28,7 +28,7 @@ public class Main {
 
         // 配置位置2:全局信息配置
         String projectPath = System.getProperty("user.dir"); // 获取项目路径
-        String filePath = projectPath + "/src/main/java"; // java下的文件路径
+        String filePath = projectPath + "/another/src/main/java"; // java下的文件路径
         GlobalConfig global = new GlobalConfig.Builder().outputDir(filePath)// 生成的输出路径
                 .author("smileShark")// 生成的作者名字
                 // .enableSwagger()开启swagger，需要添加swagger依赖并配置
@@ -52,7 +52,12 @@ public class Main {
         // 配置位置4:生成策略配置
         StrategyConfig strategyConfig = new StrategyConfig.Builder().enableCapitalMode()// 开启全局大写命名
                 // .likeTable()模糊表匹配
-                .addInclude("chapter","course","question_and_answer","subsection","user","early_morning_report")// 添加表匹配，指定要生成的数据表名，不写默认选定数据库所有表
+                .addInclude("chapter",
+                        "course",
+                        "question_and_answer",
+                        "subsection","user",
+                        "early_morning_report",
+                        "exercise_cue_words")// 添加表匹配，指定要生成的数据表名，不写默认选定数据库所有表
                 // .disableSqlFilter()禁用sql过滤:默认(不使用该方法）true
                 // .enableSchema()启用schema:默认false
                 .entityBuilder() // 实体策略配置

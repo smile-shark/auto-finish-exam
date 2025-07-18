@@ -39,6 +39,21 @@
                 style="float: left; padding: 5px"
               ></i>
             </template>
+          </el-table-column><el-table-column label="用户QQ" prop="qqAccount" width="200">
+            <template slot-scope="scope" v-if="scope.row.qqAccount">
+              <!-- 默认隐藏 -->
+              <span v-if="scope.row.showQQ">
+                {{ scope.row.qqAccount }}
+              </span>
+              <span v-else>
+                {{ utils.passwordUtil(scope.row.qqAccount) }}
+              </span>
+              <i
+                class="el-icon-view"
+                @click="scope.row.showQQ = !scope.row.showQQ"
+                style="float: left; padding: 5px"
+              ></i>
+            </template>
           </el-table-column>
           <el-table-column label="账号类型" prop="isTest" width="100">
             <template slot-scope="scope">
@@ -365,6 +380,7 @@ export default {
               ...item,
               showId: false,
               showPassword: false,
+              showQQ:false,
               saveAnswer: "notStart",
               loginTest: "notStart",
             }));

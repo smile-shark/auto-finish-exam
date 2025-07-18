@@ -48,6 +48,7 @@ public class BotGroupController {
             botEarlyMorningService.sendNowReport(GlobalBotUtil.bot, constant.REBOT_HANDLER_GROUPS);
         }
     }
+
     @Order(1)
     @GroupMessageHandler
     @MessageHandlerFilter(cmd = "^help$", at = AtEnum.NEED)
@@ -84,8 +85,16 @@ public class BotGroupController {
 
     @Order(1)
     @GroupMessageHandler
+    @MessageHandlerFilter(cmd = "^日精进\\s(.*)?$", at = AtEnum.NEED)
+    public void dailyProgress(Bot bot, GroupMessageEvent event, Matcher matcher) {
+        botChatService.dailyProgress(bot, event, matcher);
+        redisLockUtil.setMessageInterceptorLock();
+    }
+
+    @Order(1)
+    @GroupMessageHandler
     @MessageHandlerFilter(cmd = "^搜索课程\\s(.*)?$", at = AtEnum.NEED)
-    public void searchCourse(Bot bot, GroupMessageEvent event,Matcher matcher) {
+    public void searchCourse(Bot bot, GroupMessageEvent event, Matcher matcher) {
         botCourseService.searchCourse(bot, event, matcher);
         redisLockUtil.setMessageInterceptorLock();
     }
@@ -93,33 +102,34 @@ public class BotGroupController {
     @Order(2)
     @GroupMessageHandler
     @MessageHandlerFilter(cmd = "^(.*)?$")
-    public void globalMessageHandler(Bot bot, GroupMessageEvent event,Matcher matcher) {
+    public void globalMessageHandler(Bot bot, GroupMessageEvent event, Matcher matcher) {
         String message = matcher.group(1);
         // 获取课程搜索锁
         String courseSearchLock = redisLockUtil.getCourseSearchLock(event.getUserId().toString());
         if (courseSearchLock != null) {
             // 做题操作
-            botCourseService.selectCourseChild(bot, event,courseSearchLock);
+            botCourseService.selectCourseChild(bot, event, courseSearchLock);
             redisLockUtil.setMessageInterceptorLock();
             return;
         }
         // 获取验证的锁
-        if (redisLockUtil.getUserCodeLock()&&message.length() == 4){
+        if (redisLockUtil.getUserCodeLock() && message.length() == 4) {
             // 如果这个消息长度是4
-            botVerifyService.verifyUserCode(bot, event,message);
+            botVerifyService.verifyUserCode(bot, event, message);
             redisLockUtil.setMessageInterceptorLock();
         }
     }
 
     @Order(3)
     @GroupMessageHandler
-    @MessageHandlerFilter(cmd = "^(.*)?$",at=AtEnum.NEED)
-    public void atMessageGlobalHandler(Bot bot, GroupMessageEvent event, Matcher matcher){
-        if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(constant.MESSAGE_INTERCEPTOR_REDIS_KEY))){
+    @MessageHandlerFilter(cmd = "^(.*)?$", at = AtEnum.NEED)
+    public void atMessageGlobalHandler(Bot bot, GroupMessageEvent event, Matcher matcher) {
+        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(constant.MESSAGE_INTERCEPTOR_REDIS_KEY))) {
             System.out.println("消息拦截器拦截到消息，不执行");
             stringRedisTemplate.delete(constant.MESSAGE_INTERCEPTOR_REDIS_KEY);
             return;
-        };
+        }
+        ;
         String message = matcher.group(1);
         System.out.println("message = " + message);
         botChatService.chatWithCustomers(bot, event, message);

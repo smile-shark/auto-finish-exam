@@ -143,6 +143,15 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+DROP TABLE IF EXISTS `exercise_cue_words`;
+create table exercise_cue_words
+(
+    exercise_cue_words_id char(32) not null
+        primary key,
+    content               text     null
+);
+
+
 
 insert into user (user_id,username,user_password,identity) values ('AdminIsSmileShark','管理者','simple_password',2);
 
