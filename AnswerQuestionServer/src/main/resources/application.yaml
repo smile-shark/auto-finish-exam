@@ -6,6 +6,9 @@ docker:
   redis-port: ${REDIS_PORT:6380}
   redis-password: ${REDIS_PASSWORD:123456}
   qq-group-id: ${QQ_GROUP_ID:905390619}
+  ai-key: ${AI_KEY:WiLorVJAspgMTGwwKyZY:yqRaSQGrdclmoLUzAXYV}
+  ai-url: ${AI_URL:https://spark-api-open.xf-yun.com}
+  ai-model: ${AI_MODEL:lite}
 spring:
   application:
     name: AnswerQuestionServerChild
@@ -31,11 +34,11 @@ spring:
           max-wait: 100 # 最大等待时间(毫秒)
   ai:
     openai:
-      api-key: WiLorVJAspgMTGwwKyZY:yqRaSQGrdclmoLUzAXYV
+      api-key: ${docker.ai-key}
       chat:
         options:
-          model: lite
-      base-url: https://spark-api-open.xf-yun.com
+          model: ${docker.ai-model}
+      base-url: ${docker.ai-url}
 server:
   port: 8080
 shiro:

@@ -20,7 +20,7 @@ public class GlobalBotUtil {
      * @return
      */
     public boolean groupIdVerify(GroupMessageEvent event){
-        return !Objects.equals(event.getGroupId(), constant.REBOT_HANDLER_GROUPS);
+        return Objects.equals(event.getGroupId(), constant.REBOT_HANDLER_GROUPS);
     }
 
     /**

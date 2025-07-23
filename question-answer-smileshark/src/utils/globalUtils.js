@@ -49,6 +49,6 @@ export const utils = {
     }
   },
   getProxyUrl(url){
-    return '/javaSever'+url
+    return ''+url
   }
 };

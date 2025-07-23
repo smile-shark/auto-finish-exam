@@ -24,13 +24,18 @@ public class BotChatService {
     private final UserService userService;
     private final AiChatService aiChatService;
     public void chatWithCustomers(Bot bot, GroupMessageEvent event, String message) {
-        bot.sendGroupMsg(
-                event.getGroupId(),
-                MsgUtils.builder()
-                        .text(chatClient.prompt().user(message).call().content())
-                        .build(),
-                false
-        );
+        try {
+            bot.sendGroupMsg(
+                    event.getGroupId(),
+                    MsgUtils.builder()
+                            .text(chatClient.prompt().user(message).call().content())
+                            .build(),
+                    false
+            );
+        } catch (Exception e) {
+            bot.sendGroupMsg(event.getGroupId(), "调用过于频繁", false);
+            e.printStackTrace();
+        }
     }
 
 
@@ -41,7 +46,7 @@ public class BotChatService {
             // 判断消息有效性
             message = matcher.group(1);
             if(message==null){
-                throw new BusinessException("请输入正确的提示词");
+                bot.sendGroupMsg(event.getGroupId(), "请输入正确的提示词", false);
             }
             ThreadUtils.executorService.execute(()->{
                 // 通过QQ号获取到对应的用户账号密码

@@ -17,9 +17,143 @@ Docker镜像：https://hub.docker.com/r/smilesharklx/sharktool
 >
 > NapCat：https://github.com/NapNeko/NapCat-Docker
 
+### 配置文件
+
+> 配置文件因为隐私问题没有上传
+
+```yaml
+docker:
+  mysql-address: ${MYSQL_ADDRESS:localhost:3306}
+  mysql-username: ${MYSQL_USERNAME:root}
+  mysql-password: ${MYSQL_PASSWORD:123456}
+  redis-host: ${REDIS_ADDRESS:localhost}
+  redis-port: ${REDIS_PORT:6380}
+  redis-password: ${REDIS_PASSWORD:123456}
+  qq-group-id: ${QQ_GROUP_ID:对应的qq群号}
+  ai-key: ${AI_KEY:你的key}
+  ai-url: ${AI_URL:你的ai接口}
+  ai-model: ${AI_MODEL:你想要的模型}
+spring:
+  application:
+    name: AnswerQuestionServerChild
+  web:
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    url: jdbc:mysql://${docker.mysql-address}/school_question_data?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: ${docker.mysql-username:root}
+    password: ${docker.mysql-password:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${docker.redis-host}
+      port: ${docker.redis-port}
+      database: 0
+      password: ${docker.redis-password}
+      lettuce:
+        pool:
+          max-active: 8 # 最大连接
+          max-idle: 8 # 最大空闲
+          min-idle: 0 # 最小空闲
+          max-wait: 100 # 最大等待时间(毫秒)
+  ai:
+    openai:
+      api-key: ${docker.ai-key}
+      chat:
+        options:
+          model: ${docker.ai-model}
+      base-url: ${docker.ai-url}
+server:
+  port: 8080
+shiro:
+  ws:
+    server:
+      enable: true
+      url: "/shark-bot"
+  interceptor: com.smileShark.robot.interceptor.BotInterceptor
+rebot:
+  handler-groups: ${docker.qq-group-id} # 监听的群号
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 驼峰命名规则
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印sql日志
+  mapper-locations: classpath*:mapper/*.xml # 扫描mapper xml文件
+  type-aliases-package: com.smileshark.entity # 别名包
+springdoc:
+  api-docs:
+    enabled: true # 开启swagger文档
+    path: /v3/api-docs # 配置swagger文档的数据访问路径
+  swagger-ui:
+    path: /swagger-ui.html # 访问swagger文档的路径
+mysql:
+  data:
+    split:
+      string: LBT_1534_LX_5212_WZL_4818
+school:
+  times:
+    STUDENT_EXAM_MAX_TIMES: 3
+  url:
+    STUDENT_LOGIN_URL: https://ai.cqzuxia.com/connect/token
+    STUDENT_INFO_URL: https://ai.cqzuxia.com/education/api/Student/GetStudentInfo
+    STUDENT_HAVE_COURSE_URL: https://ai.cqzuxia.com/evaluation/api/stuevaluatereport/GetCourseProgram
+    STUDENT_GET_COURSE_INFO_URL: https://ai.cqzuxia.com/evaluation/api/studentevaluate/GetCourseInfoByCourseId
+    STUDENT_SUBSECTION_EXAM_START_URL: https://ai.cqzuxia.com/evaluation/api/studentevaluate/beginevaluate
+    STUDENT_SUBSECTION_ANSWER_QUESTION_URL: https://ai.cqzuxia.com/evaluation/api/StudentEvaluate/SaveEvaluateAnswer
+    STUDENT_SUBSECTION_EXAM_END_URL: https://ai.cqzuxia.com/evaluation/api/StudentEvaluate/SaveTestMemberInfo
+    STUDENT_MISTAKES_URL: https://ai.cqzuxia.com/evaluation/api/StuCenter/GetFaultQuestionList
+    STUDENT_SING_IN_URL: https://ai.cqzuxia.com/growing/api/StuTask/SaveStuDailyAssignment
+
+    TEACHER_LOGIN_URL: https://zxsz.cqzuxia.com/connect/token
+    TEACHER_INFO_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCenter/GetTeacherInfo
+    TEACHER_TEST_EXAM_START_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/GetTeacherCourseExamInfoByCourseID
+    TEACHER_TEST_EXAM_ANSWER_QUESTION_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/SaveTeacherCourseExamQuestion
+    TEACHER_TEST_EXAM_END_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/SaveTeacherCourseExamInfo
+    TEACHER_PASS_SUBSECTION_EXAM_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/GetTeacherCourseEvaluateCompleteTree
+    TEACHER_SUBSECTION_EXAM_START_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/GetQuesionListByKPId
+    TEACHER_SUBSECTION_EXAM_END_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/SaveTeacherCourseEvaluateInfo
+    TEACHER_TEST_EXAM_RECORD_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/GetTeacherCourseExamRecordList
+    TEACHER_TEST_EXAM_FINISH_INFO_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/TeacherCourseEvaluate/GetQuestionListByTeacherCourseExamID
+    TEACHER_COURSE_LIST_URL: https://zxsz.cqzuxia.com/teacherCertifiApi/api/CourseChapter/GetLessonListByCondition
+
+  params:
+    STUDENT_CLIENT_ID: 43215cdff2d5407f8af074d2d7e589ee
+    STUDENT_CLIENT_SECRET: DBqEL1YfBmKgT9O491J1YnYoq84lYtB/LwMabAS2JEqa8I+r3z1VrDqymjisqJn3
+    TEACHER_CLIENT_ID: c12abe723eda4b66af77015f2b572440
+    TEACHER_CLIENT_SECRET: yHpq/AII2pBeUrUlSeMZhEs84gxSfQ/y+PyGBOmI6dh33EK6Za1VwHwz7uRRifUC
+    MISTAKES_MAX_COUNT: 2000
+another:
+  url:
+    EARLY_PAPER_URL: https://bpi.icodeq.com/163news
+  redis-key:
+   search-course: searchCourse
+   search-chapter: searchChapter
+   search-subsection: searchSubsection
+   message-interceptor: messageInterceptor
+   verify-code: verifyCode:code
+
+key:
+  token:
+    key: smileshark&${mysql.data.split.string}
+    expiration-time: 43200
+
+```
+
+
+
 ### 部署方式
 
 #### 一键部署
+
+**填写配置**
+
+`docker-compose.yml `文件中
+
+```yaml
+      - QQ_GROUP_ID=  # QQ群号
+      - AI_KEY=  # AI 密钥
+      - AI_URL=  # AI 地址
+      - AI_MODEL=  # AI 模型
+```
 
 ```bash
 docker-compose up -d # 旧版本docker
@@ -101,12 +235,15 @@ docker compose up -d # 新版本docker
         - REDIS_ADDRESS=sharktool-redis  # redis地址
         - REDIS_PORT=6379  # redis端口
         - REDIS_PASSWORD=sharktool  # redis密码
-        - QQ_GROUP_ID=QQ群号  # QQ群号
+        - QQ_GROUP_ID=  # QQ群号
+        - AI_KEY=  # AI 密钥
+        - AI_URL=  # AI 地址
+        - AI_MODEL=  # AI 模型
       ports:
         - 18080:8080
       container_name: sharktool
       restart: always
-      image: smilesharklx/sharktool:3.2.1
+      image: smilesharklx/sharktool:3.4.1
       networks:
         - sharktool-network
         
@@ -159,3 +296,10 @@ smilesharklx/sharktool:3.2.1
 1. 接入AI，完成QQ机器人对话功能
 
 2. 添加一键日精进功能
+
+#### 2025/7/23
+
+1. 在bot拦截器中添加账号绑定的校验 （完成）
+2. 修改菜单目录 （完成）
+3. ai接口频繁调用会导致报错 （没有找到报错信息，直接使用错误处理了）
+4. 提交时超出速率尝试重新提交 （完成）

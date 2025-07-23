@@ -53,17 +53,18 @@ public class BotGroupController {
     @GroupMessageHandler
     @MessageHandlerFilter(cmd = "^help$", at = AtEnum.NEED)
     public void onHelp(Bot bot, GroupMessageEvent event) {
-        System.out.println("help");
-        if (globalBotUtil.groupIdVerify(event)) return;
+        redisLockUtil.setMessageInterceptorLock();
+        System.out.println("触发帮助提示");
         StringBuffer buffer = new StringBuffer();
         buffer.append("帮助菜单：\n");
-        buffer.append("1. help：查看帮助菜单\n");
-        buffer.append("2. 早报：查看早报内容\n");
-        buffer.append("3. 早报-天数：查看指定天数的早报内容\n");
-        buffer.append("4. 搜索课程-xxx：搜索课程，根据选项自动进行评估考试\n");
+        buffer.append("1. @机器人 help：查看帮助菜单\n");
+        buffer.append("2. @机器人 早报：查看早报内容\n");
+        buffer.append("3. @机器人 早报 天数：查看指定天数的早报内容\n");
+        buffer.append("4. @机器人 搜索课程 xxx：搜索课程，根据选项自动进行评估考试\n");
+        buffer.append("5. @机器人 日精进 xxx：一键完成签到、运动打卡、日精进\n");
+        buffer.append("6. @机器人 内容：可以与机器人聊天\n");
         // 返回一些对应的用法示例
         bot.sendGroupMsg(event.getGroupId(), buffer.toString(), false);
-        redisLockUtil.setMessageInterceptorLock();
     }
 
 
@@ -87,6 +88,7 @@ public class BotGroupController {
     @GroupMessageHandler
     @MessageHandlerFilter(cmd = "^日精进\\s(.*)?$", at = AtEnum.NEED)
     public void dailyProgress(Bot bot, GroupMessageEvent event, Matcher matcher) {
+        System.out.println("搜到日精进指令"+matcher.group(1));
         botChatService.dailyProgress(bot, event, matcher);
         redisLockUtil.setMessageInterceptorLock();
     }
@@ -129,7 +131,6 @@ public class BotGroupController {
             stringRedisTemplate.delete(constant.MESSAGE_INTERCEPTOR_REDIS_KEY);
             return;
         }
-        ;
         String message = matcher.group(1);
         System.out.println("message = " + message);
         botChatService.chatWithCustomers(bot, event, message);

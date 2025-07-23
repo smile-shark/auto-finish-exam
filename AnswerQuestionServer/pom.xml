@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.smileshark</groupId>
     <artifactId>AnswerQuestionServer</artifactId>
-    <version>3.2.1</version>
+    <version>3.4.1</version>
     <name>AnswerQuestionServer</name>
     <description>AnswerQuestionServer</description>
     <url/>

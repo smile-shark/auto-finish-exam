@@ -27,23 +27,36 @@ public class AiChatServiceImp implements AiChatService {
         // 获取登录的令牌
         SchoolLoginResponse studentToken = userService.getStudentToken(user.getUserId(), user.getUserPassword());
         // 进行签到
-        signInUtil.singIn(studentToken);
+        while (signInUtil.singIn(studentToken).getCode() == -1) {
+            System.out.println("签到失败，正在重试...");
+            Thread.sleep(2000);
+        }
+
         Thread.sleep(1000);
 
-        // 发送日精进
-        // 1. 通过ai获取到日精进内容
-        String dailyContent = chatClient.prompt().user("今天我学习了" + message + "请帮我写200字的日精进").call().content();
-        // 2. 发送日精进内容
-        signInUtil.sendDailyProgress(studentToken, dailyContent);
 
         // 发送运动打卡
         // 1. 通过ai获取到运动打卡内容
         String motionContent = chatClient.prompt().user(
                 exerciseCueWordsService.lambdaQuery().last("order by rand() limit 1").one().getContent()
         ).call().content();
-        Thread.sleep(1000);
         // 2. 发送运动打卡内容
-        signInUtil.sendSportsSignIn(studentToken, motionContent);
+        while (signInUtil.sendSportsSignIn(studentToken, motionContent).getCode() == -1) {
+            System.out.println("运动打卡失败，正在重试...");
+            Thread.sleep(2000);
+        }
+
+        Thread.sleep(1000);
+
+        // 发送日精进
+        // 1. 通过ai获取到日精进内容
+        String dailyContent = chatClient.prompt().user("今天我学习了" + message + "请帮我写200字的日精进").call().content();
+        // 2. 发送日精进内容
+        while (signInUtil.sendDailyProgress(studentToken, dailyContent).getCode() == -1) {
+            System.out.println("日精进失败，正在重试...");
+            Thread.sleep(2000);
+        }
+
     }
 
     @Override

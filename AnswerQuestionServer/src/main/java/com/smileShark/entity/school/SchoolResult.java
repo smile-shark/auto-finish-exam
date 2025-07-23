@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SchoolResult<T> {
     private Integer code;
+    private Integer statusCode;
     private T data;
     private Boolean success;
     private LocalDateTime time;

@@ -50,12 +50,15 @@ services:
       - REDIS_ADDRESS=sharktool-redis  # redis地址
       - REDIS_PORT=6379  # redis端口
       - REDIS_PASSWORD=sharktool  # redis密码
-      - QQ_GROUP_ID=958803816  # QQ群号
+      - QQ_GROUP_ID=  # QQ群号
+      - AI_KEY=  # AI 密钥
+      - AI_URL=  # AI 地址
+      - AI_MODEL=  # AI 模型
     ports:
       - 18080:8080
     container_name: sharktool
     restart: always
-    image: smilesharklx/sharktool:3.2.1
+    image: smilesharklx/sharktool:3.4.1
     networks:
       - sharktool-network
       
