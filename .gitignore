@@ -31,4 +31,5 @@ build/
 .vscode/
 
 ### Mac OS ###
-.DS_Store
+.DS_Store"mysql_data/mysql.sock" 
+"mysql_data/" 
