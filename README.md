@@ -33,6 +33,10 @@ docker:
   ai-key: ${AI_KEY:你的key}
   ai-url: ${AI_URL:你的ai接口}
   ai-model: ${AI_MODEL:你想要的模型}
+  kpid-sign-url: ${KPID_SIGN_URL:http://127.0.0.1:8000/sign/decode}
+  shiro-ws-url: ${SHIRO_WS_URL:/shark-bot}
+sign:
+  kpid-sign-url: ${docker.kpid-sign-url}
 spring:
   application:
     name: AnswerQuestionServerChild
@@ -69,7 +73,7 @@ shiro:
   ws:
     server:
       enable: true
-      url: "/shark-bot"
+      url: ${docker.shiro-ws-url}
   interceptor: com.smileShark.robot.interceptor.BotInterceptor
 rebot:
   handler-groups: ${docker.qq-group-id} # 监听的群号
@@ -243,7 +247,14 @@ docker compose up -d # 新版本docker
         - 18080:8080
       container_name: sharktool
       restart: always
-      image: smilesharklx/sharktool:3.4.1
+      image: smilesharklx/sharktool:3.5.1
+      networks:
+        - sharktool-network
+        
+    sharktool-sign-server:
+      container_name: sharktool-sign-server
+      restart: always
+      image: smilesharklx/sharktool-sign-server:1.0.0
       networks:
         - sharktool-network
         

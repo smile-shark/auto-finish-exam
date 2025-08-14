@@ -14,6 +14,7 @@ import java.util.List;
 public class SchoolStudentSubsectionExamAnswerRequest {
     private String kpid;
     private List<Question> questions;
+    private String sign;
 
     @Data
     @Component

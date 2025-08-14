@@ -3,12 +3,14 @@ package com.smileShark.robot.service;
 import com.mikuac.shiro.common.utils.MsgUtils;
 import com.mikuac.shiro.core.Bot;
 import com.mikuac.shiro.dto.event.message.GroupMessageEvent;
+import com.smileShark.common.Result;
 import com.smileShark.constant.Constant;
 import com.smileShark.entity.User;
 import com.smileShark.service.UserService;
 import com.smileShark.utils.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +19,7 @@ public class BotVerifyService {
     private final Constant constant;
     private final StringRedisTemplate stringRedisTemplate;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
     public void verifyUserCode(Bot bot, GroupMessageEvent event, String message) {
         // 尝试在redis中去匹配这个验证码
         String account = stringRedisTemplate.opsForValue().get(
@@ -57,6 +60,9 @@ public class BotVerifyService {
                 setQqAccount(String.valueOf(event.getUserId()));
                 setUserId(account);
             }});
+            // 通知网页身份验证成功
+            messagingTemplate.convertAndSend("/topic/verifySuccess/"+account, Result.success("身份验证成功"));
+            System.out.println(account + " 身份验证成功");
         }
     }
 }

@@ -98,4 +98,8 @@ public class Constant {
     public String MESSAGE_INTERCEPTOR_REDIS_KEY;
     @Value("${another.redis-key.verify-code}")
     public String VERIFY_CODE_REDIS_KEY;
+
+    // sign
+    @Value("${sign.kpid-sign-url}")
+    public String KPID_SIGN_URL;
 }

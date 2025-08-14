@@ -27,6 +27,7 @@ import com.smileShark.service.CourseService;
 import com.smileShark.service.QuestionAndAnswerService;
 import com.smileShark.service.SubsectionService;
 import com.smileShark.service.UserService;
+import com.smileShark.sign.ConnectionPythonServer;
 import com.smileShark.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
     private final CourseService courseService;
     private SchoolStudentCourseInfoResponse courseInfo;
     private final StringRedisTemplate stringRedisTemplate;
+    private final ConnectionPythonServer connectionPythonServer;
 
 
     @Override
@@ -190,6 +192,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                 Future<?> future = ThreadUtils.executorService.submit(() -> {
                     // 考试开始，获取题目
                     SchoolStudentSubsectionQuestionListResponse studentExamInfo = getStudentSubsectionQuestionById(loginTokenInfo, subsection.getSubsectionId());
+
                     if (studentExamInfo == null) {
                         return null;
                     }
@@ -207,9 +210,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                                         constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                                         HttpMethod.POST,
                                         MediaType.APPLICATION_JSON,
-                                        new SchoolStudentSubsectionExamAnswerRequest(subsection.getSubsectionId(), new ArrayList<>() {{
-                                            add(new SchoolStudentSubsectionExamAnswerRequest.Question(question.getId(), "error"));
-                                        }}),
+                                        schoolStudentSubsectionExamAnswerRequestSign(subsection.getSubsectionId(),question.getId(),List.of("error")),
                                         SchoolResult.class,
                                         TokenUtil.montage(loginTokenInfo),
                                         null
@@ -219,14 +220,13 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                             // 提取正确答案
                             AnswerFormatUtil answerFormatUtil = SpringContextUtil.getBean(AnswerFormatUtil.class);
                             List<String> list = answerFormatUtil.formatAnswer(one.getAnswers());
+
                             // 提交答案
                             return restTemplateUtil.get(
                                     constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                                     HttpMethod.POST,
                                     MediaType.APPLICATION_JSON,
-                                    new SchoolStudentSubsectionExamAnswerRequest(subsection.getSubsectionId(), new ArrayList<>() {{
-                                        add(new SchoolStudentSubsectionExamAnswerRequest.Question(question.getId(), String.join(",", list)));
-                                    }}),
+                                    schoolStudentSubsectionExamAnswerRequestSign(subsection.getSubsectionId(),question.getId(),list),
                                     SchoolResult.class,
                                     TokenUtil.montage(loginTokenInfo),
                                     null
@@ -237,7 +237,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                     // 等待考试结束
                     for (Future<?> examFuture : examFutures) {
                         try {
-                            examFuture.get();
+                            System.out.println(examFuture.get());
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                             throw new BusinessException("考试失败");
@@ -248,7 +248,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                             constant.STUDENT_SUBSECTION_EXAM_END_URL,
                             HttpMethod.POST,
                             MediaType.APPLICATION_JSON,
-                            new SchoolStudentSubsectionExamAnswerRequest(subsection.getSubsectionId(), new ArrayList<>()),
+                            schoolStudentSubsectionExamAnswerRequestSign(subsection.getSubsectionId(),null,new ArrayList<>()),
                             SchoolResult.class,
                             TokenUtil.montage(loginTokenInfo),
                             null
@@ -295,9 +295,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                                             constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                                             HttpMethod.POST,
                                             MediaType.APPLICATION_JSON,
-                                            new SchoolStudentSubsectionExamAnswerRequest(subsection.getSubsectionId(), new ArrayList<>() {{
-                                                add(new SchoolStudentSubsectionExamAnswerRequest.Question(question.getQuestionID(), "error"));
-                                            }}),
+                                            schoolStudentSubsectionExamAnswerRequestSign(subsection.getSubsectionId(),null,List.of("error")),
                                             SchoolResult.class,
                                             TokenUtil.montage(loginTokenInfo),
                                             null
@@ -478,9 +476,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                             constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                             HttpMethod.POST,
                             MediaType.APPLICATION_JSON,
-                            new SchoolStudentSubsectionExamAnswerRequest(subsections.get(i).getSubsectionId(), new ArrayList<>() {{
-                                add(new SchoolStudentSubsectionExamAnswerRequest.Question(question.getId(), "error"));
-                            }}),
+                            schoolStudentSubsectionExamAnswerRequestSign(subsections.get(i).getSubsectionId(), question.getId(), List.of("error")),
                             SchoolResult.class,
                             TokenUtil.montage(studentToken),
                             null
@@ -495,9 +491,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                         constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                         HttpMethod.POST,
                         MediaType.APPLICATION_JSON,
-                        new SchoolStudentSubsectionExamAnswerRequest(subsections.get(i).getSubsectionId(), new ArrayList<>() {{
-                            add(new SchoolStudentSubsectionExamAnswerRequest.Question(question.getId(), String.join(",", list)));
-                        }}),
+                        schoolStudentSubsectionExamAnswerRequestSign(subsections.get(i).getSubsectionId(), question.getId(), list),
                         SchoolResult.class,
                         TokenUtil.montage(studentToken),
                         null);
@@ -507,7 +501,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                     constant.STUDENT_SUBSECTION_EXAM_END_URL,
                     HttpMethod.POST,
                     MediaType.APPLICATION_JSON,
-                    new SchoolStudentSubsectionExamAnswerRequest(subsections.get(i).getSubsectionId(), new ArrayList<>()),
+                    schoolStudentSubsectionExamAnswerRequestSign(subsections.get(i).getSubsectionId(), null, null),
                     SchoolResult.class,
                     TokenUtil.montage(studentToken),
                     null
@@ -553,13 +547,80 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         return countData;
     }
 
+    @Override
+    public Result questionIdsBySubsectionId(String subsectionId) {
+        User user = TokenInterceptor.getUser();
+        loginTokenInfo=userService.getStudentToken(user.getUserId(),user.getUserPassword());
+        SchoolStudentSubsectionQuestionListResponse studentSubsectionQuestionById = getStudentSubsectionQuestionById(loginTokenInfo, subsectionId);
+        return Result.success(studentSubsectionQuestionById);
+    }
+
+    @Override
+    public Result answerQuestion(String questionId, String subsectionId) {
+        User user = TokenInterceptor.getUser();
+        loginTokenInfo=userService.getStudentToken(user.getUserId(),user.getUserPassword());
+        // 如果没有questionId说明是进行提交
+        if(questionId==null||questionId.isEmpty()){
+            // 考试结束
+            SchoolResult schoolResult = restTemplateUtil.get(
+                    constant.STUDENT_SUBSECTION_EXAM_END_URL,
+                    HttpMethod.POST,
+                    MediaType.APPLICATION_JSON,
+                    schoolStudentSubsectionExamAnswerRequestSign(subsectionId, null, null),
+                    SchoolResult.class,
+                    TokenUtil.montage(loginTokenInfo),
+                    null
+            );
+            return Result.success("考试结束",schoolResult);
+        }
+        // 提取正确答案
+        // 查询答案
+        QuestionAndAnswer one = findQuestionAndAnswer(questionId);
+        if (one == null) {
+            System.out.println("questionId = " +questionId + " 没有找到答案");
+            // 提交答案
+            SchoolResult schoolResult = restTemplateUtil.get(
+                    constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
+                    HttpMethod.POST,
+                    MediaType.APPLICATION_JSON,
+                    schoolStudentSubsectionExamAnswerRequestSign(subsectionId, questionId, List.of("error")),
+                    SchoolResult.class,
+                    TokenUtil.montage(loginTokenInfo),
+                    null
+            );
+            return Result.success("没有找到答案",schoolResult);
+        }
+        // 提取正确答案
+        AnswerFormatUtil answerFormatUtil = SpringContextUtil.getBean(AnswerFormatUtil.class);
+        List<String> list = answerFormatUtil.formatAnswer(one.getAnswers());
+        // 提交答案
+        SchoolResult schoolResult = restTemplateUtil.get(
+                constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
+                HttpMethod.POST,
+                MediaType.APPLICATION_JSON,
+                schoolStudentSubsectionExamAnswerRequestSign(subsectionId, questionId, list),
+                SchoolResult.class,
+                TokenUtil.montage(loginTokenInfo),
+                null);
+        return Result.success("回答成功",schoolResult);
+    }
+
+    @Override
+    public Result saveAnswer(Integer size) {
+        User user = TokenInterceptor.getUser();
+        loginTokenInfo=userService.getStudentToken(user.getUserId(),user.getUserPassword());
+        List<SchoolStudentMistakesResponse.Question> questions = getQuestions(loginTokenInfo, size);
+        saveQuestions(questions);
+        return Result.success("保存成功");
+    }
+
     public void saveAnswer(User user, int size) {
         SchoolLoginResponse userToken = userService.getStudentToken(user.getUserId(), user.getUserPassword());
-        List<SchoolStudentMistakesResponse.Question> questions = getQuestions(userToken,size);
+        List<SchoolStudentMistakesResponse.Question> questions = getQuestions(userToken, size);
         this.saveQuestions(questions);
     }
 
-    private List<SchoolStudentMistakesResponse.Question> getQuestions(SchoolLoginResponse userToken, int size) {
+    public List<SchoolStudentMistakesResponse.Question> getQuestions(SchoolLoginResponse userToken, int size) {
 
         HashMap<String, Integer> map = MapUtil.of("PageSize", size);
         map.put("PageIndex", 1);
@@ -709,7 +770,9 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
      * @return 返回对应章节下面需要考试的小节
      */
     private SchoolStudentSubsectionQuestionListResponse getStudentSubsectionQuestionById(SchoolLoginResponse token, String subsectionId) {
-        return restTemplateUtil.get(
+        // 先通过pythonServer进行签名
+        String kpIdSign = connectionPythonServer.getKpIdSign(Map.of("kpId", subsectionId));
+        SchoolResult<SchoolStudentSubsectionQuestionListResponse> result = restTemplateUtil.get(
                 constant.STUDENT_SUBSECTION_EXAM_START_URL,
                 HttpMethod.GET,
                 MediaType.APPLICATION_JSON,
@@ -717,8 +780,21 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
                 new ParameterizedTypeReference<SchoolResult<SchoolStudentSubsectionQuestionListResponse>>() {
                 },
                 TokenUtil.montage(token),
-                MapUtil.of("kpId", subsectionId)
-        ).getData();
+                Map.of("kpId", subsectionId, "sign", kpIdSign.replaceAll("\"", ""))
+        );
+        System.out.println("result = " + result);
+        return result.getData();
+//        String kpId = restTemplateUtil.get(
+//                constant.STUDENT_SUBSECTION_EXAM_START_URL,
+//                HttpMethod.GET,
+//                MediaType.APPLICATION_JSON,
+//                null,
+//                String.class,
+//                TokenUtil.montage(token),
+//                Map.of("kpId", subsectionId,"sign",kpIdSign.replaceAll("\"",""))
+//        );
+//        System.out.println(kpId);
+//        return null;
     }
 
     private QuestionAndAnswer findQuestionAndAnswer(String questionId) {
@@ -923,8 +999,25 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
             }
 
         } else {
-            throw new BusinessException("身份错误",401);
+            throw new BusinessException("身份错误", 401);
         }
         return examCount;
+    }
+
+    public SchoolStudentSubsectionExamAnswerRequest schoolStudentSubsectionExamAnswerRequestSign(String subsectionId, String questionID, List<String> answerIds) {
+        // 整合签名参数
+        SchoolStudentSubsectionExamAnswerRequest request = new SchoolStudentSubsectionExamAnswerRequest(subsectionId, new ArrayList<>(), "");
+        // 获取正确的签名
+        String firstSign = connectionPythonServer.getKpIdSign(request);
+        // 整合参数
+        request.setSign(firstSign.replaceAll("\"", ""));
+        if(questionID!=null){
+            request.getQuestions().add(new SchoolStudentSubsectionExamAnswerRequest.Question(questionID, String.join(",", answerIds)));
+        }
+        // 获取第二次参数
+        String secondSign = connectionPythonServer.getKpIdSign(request);
+        // 整合请求体
+        request.setSign(secondSign.replaceAll("\"", ""));
+        return request;
     }
 }

@@ -63,10 +63,29 @@
         </el-select>
       </el-form-item>
     </el-form>
-    <el-row>
-      <el-button type="primary" @click.prevent="start" :disabled="isStart"
-        >点击开始</el-button
-      >
+    <el-row type="flex" justify="space-around">
+      <el-col :span="12" style="padding: 2rem 1rem">
+        <el-slider v-model="interval" :min="2" :disabled="isStart"></el-slider>
+        <el-input-number
+          v-model="interval"
+          :min="2"
+          :max="100"
+          :disabled="isStart"
+        ></el-input-number>
+        <span style="padding: 10px; font-weight: bold">间隔时间(秒)</span>
+        <span v-if="isStart"
+          >倒计时
+          <span style="font-weight: bold; color: #66b1ff">{{
+            showInterval
+          }}</span>
+          秒</span
+        >
+      </el-col>
+      <el-col :span="6" style="line-height: normal; padding: 2rem 1rem">
+        <el-button type="primary" @click.prevent="start" :disabled="isStart"
+          >点击开始</el-button
+        >
+      </el-col>
     </el-row>
     <el-row>
       <el-col :span="8">
@@ -82,7 +101,25 @@
       </el-col>
       <el-col :span="16">
         <div v-highlight class="tool-finish-show-box">
-          <div class="pre">
+          <div class="pre" ref="pre">
+            <p v-for="(item, index) in showAnswerList" :key="index">
+              <i
+                class="el-icon-loading"
+                v-if="item.finish == 0"
+                style="color: #409eff"
+              ></i>
+              <i
+                class="el-icon-success"
+                v-if="item.finish == 1"
+                style="color: #85ce61"
+              ></i>
+              <i
+                class="el-icon-error"
+                v-if="item.finish == 2"
+                style="color: #f56c6c"
+              ></i>
+              <span v-html="item.question"></span>
+            </p>
             <p>正确完成题目数量：{{ finishCount.rightAnswerCount }}</p>
             <p>未完成题目数量：{{ finishCount.noAnswerCount }}</p>
           </div>
@@ -99,6 +136,8 @@ import { utils } from "@/utils/globalUtils";
 export default {
   data() {
     return {
+      interval: 5,
+      showInterval: 0,
       form: {
         selectCourseName: "",
         selectChapterName: "",
@@ -116,6 +155,19 @@ export default {
         rightAnswerCount: 0,
         noAnswerCount: 0,
       },
+      nowFinishSubsection: {
+        subsection: {},
+        questionList: [],
+        questionLength: 0,
+        havaError: false,
+      },
+      showAnswerList: [
+        // {
+        //   question:
+        //     "从第一台计算机诞生到现在的50年中，按计算机采用的电子器件来划分，计算机的发展经历了&nbsp;",
+        //   finish: 0, // 0 完成中，1 正确，2 错误
+        // },
+      ],
     };
   },
   watch: {
@@ -192,7 +244,7 @@ export default {
     start() {
       this.FinishCount = 0;
       this.QuestionCount = 0;
-      this.finishCounts = {
+      this.finishCount = {
         rightAnswerCount: 0,
         noAnswerCount: 0,
       };
@@ -262,7 +314,10 @@ export default {
           if (res.data.success) {
             this.QuestionCount = res.data.data.total;
             this.subsectionIdList = res.data.data.data;
-            this.setInserver();
+            this.changeShowInterval();
+            setTimeout(() => {
+              this.setInserver();
+            }, 1000 * this.interval);
           } else {
             this.$message.error(res.data.message);
             this.isState = false;
@@ -270,19 +325,79 @@ export default {
           }
         })
         .catch((err) => {
+          console.log(err);
+
           this.isState = false;
           this.isStart = false;
           this.$message.error("请求失败，请检查网络连接");
         });
     },
+    changeShowInterval() {
+      this.showInterval = this.interval;
+      // 倒计时
+      let down = () => {
+        setTimeout(() => {
+          this.showInterval--;
+          if (this.showInterval > 0) {
+            down();
+          }
+        }, 1000);
+      };
+      down();
+    },
     setInserver() {
       if (this.subsectionIdList.length == 0) {
-        this.$message("没有任何题目需要回答");
+        this.$message.success("所有题目已完成");
         this.isState = false;
         this.isStart = false;
         return;
       }
-      axios
+
+      if (this.subsectionIdList.length > 0) {
+        this.nowFinishSubsection = {
+          subsection: this.subsectionIdList[0],
+          questionList: [],
+          questionLength: 0,
+          havaError: false,
+        };
+      }
+      // 根据subsectionId获取题目列表
+      if (this.nowFinishSubsection.questionList.length == 0) {
+        if (this.nowFinishSubsection.subsection) {
+          // 获取考试的题目
+          axios
+            .get(
+              utils.getProxyUrl("/questionAndAnswer/questionIdsBySubsectionId"),
+              {
+                params: {
+                  subsectionId:
+                    this.nowFinishSubsection.subsection.subsectionId,
+                },
+              }
+            )
+            .then((res) => {
+              if (res.data.success) {
+                this.nowFinishSubsection.questionList =
+                  res.data.data.questionList;
+                this.nowFinishSubsection.questionLength =
+                  res.data.data.questionList.length;
+                // 完成题目考试
+                this.changeShowInterval();
+                this.questionToShow();
+                setTimeout(() => {
+                  this.finishQuestion();
+                }, 1000 * this.interval);
+              } else {
+                this.$message.error("题目获取失败");
+              }
+            });
+        } else {
+          this.isState = false;
+          this.isStart = false;
+        }
+      }
+
+      /*axios
         .post(
           utils.getProxyUrl("/questionAndAnswer/normal-exam-finish"),
           this.subsectionIdList
@@ -304,7 +419,10 @@ export default {
           this.FinishCount =
             this.finishCount.rightAnswerCount + this.finishCount.noAnswerCount;
           // 存储答案
-          if (localStorage.getItem("identity") == 0 && this.finishCount.noAnswerCount > 0) {
+          if (
+            localStorage.getItem("identity") == 0 &&
+            this.finishCount.noAnswerCount > 0
+          ) {
             axios
               .post(utils.getProxyUrl("/questionAndAnswer/save-answer"))
               .then((res) => {
@@ -328,7 +446,87 @@ export default {
         .finally(() => {
           this.isState = false;
           this.isStart = false;
+        });*/
+    },
+    questionToShow() {
+      // 1. 将问题存入展示列表
+      if (this.nowFinishSubsection.questionList.length != 0) {
+        this.showAnswerList.push({
+          question: this.nowFinishSubsection.questionList[0].questionTitle,
+          finish: 0,
         });
+        this.$nextTick(() => {
+          const container = this.$refs.pre;
+          container.scrollTop = container.scrollHeight;
+        });
+      }
+    },
+    finishQuestion() {
+      if (this.nowFinishSubsection.questionList.length == 0) {
+        // 一次小节的问题回答完成
+        axios
+          .post(utils.getProxyUrl("/questionAndAnswer/answer-question"), null, {
+            params: {
+              questionId: null,
+              subsectionId: this.nowFinishSubsection.subsection.subsectionId,
+            },
+          })
+          .then((res) => {
+            this.subsectionIdList.splice(0, 1);
+            // 判断这个小节列表中是否存在错误，有错误就会进行对应的题目保存
+            if(this.nowFinishSubsection.havaError){
+              axios.post(utils.getProxyUrl("/questionAndAnswer/saveAnswerPageList"),null,{params:{size:this.nowFinishSubsection.questionLength}}).then(res=>{
+                if(res.data.success){
+                  this.$message.success("新答案保存成功")
+                }else{
+                  this.$message.error("新答案保存失败")
+                }
+              })
+            }
+
+            // 移除这个小节
+            this.nowFinishSubsection = {
+              subsection: {},
+              questionList: [],
+              questionLength: 0,
+              havaError: false,
+            };
+            this.changeShowInterval();
+            setTimeout(() => {
+              this.setInserver();
+            }, 1000 * this.interval);
+          });
+      } else {
+        // 还有问题没有回答完成
+        // 2. 开始回答问题
+        axios
+          .post(utils.getProxyUrl("/questionAndAnswer/answer-question"), null, {
+            params: {
+              questionId: this.nowFinishSubsection.questionList[0].id,
+              subsectionId: this.nowFinishSubsection.subsection.subsectionId,
+            },
+          })
+          .then((res) => {
+            if (res.data.message!='没有找到答案') {
+              this.FinishCount++;
+              this.finishCount.rightAnswerCount++;
+              // 修改展示的完成进度为完成
+              this.showAnswerList[this.showAnswerList.length - 1].finish = 1;
+            } else {
+              this.finishCount.noAnswerCount++;
+              this.showAnswerList[this.showAnswerList.length - 1].finish = 2;
+              this.nowFinishSubsection.havaError = true;
+            }
+            // 移除这个问题
+            this.nowFinishSubsection.questionList.splice(0, 1);
+            // 进行自调用
+            this.changeShowInterval();
+            this.questionToShow();
+            setTimeout(() => {
+              this.finishQuestion();
+            }, 1000 * this.interval);
+          });
+      }
     },
     changeState() {
       let num;

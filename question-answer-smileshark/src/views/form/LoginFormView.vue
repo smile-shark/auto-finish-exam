@@ -3,52 +3,69 @@
     <!-- <link rel="stylesheet" type="text/css" href="@/css/card.css" /> -->
     <div class="out-card">
       <div class="loginBox card">
-      <h2>
-        登录
-        <span style="font-size: 30px; color: rgb(33, 184, 95)">Shark Tool</span>
-      </h2>
-      <form action="">
-        <div class="item">
-          <input type="text" v-model="userName" id="userName" required />
-          <label for="userName">用户名：</label>
-        </div>
-        <div class="item">
-          <input type="password" v-model="password" id="password" required />
-          <label for="password">密码：</label>
-        </div>
-        <div>
-          <el-radio-group v-model="identity">
-            <el-radio :label="0" style="padding:2px">学生</el-radio>
-            <el-radio :label="1" style="padding:2px">教师</el-radio>
-            <el-radio :label="2" style="padding:2px">管理员</el-radio>
-          </el-radio-group>
-        </div>
-        <button class="btn" @click.prevent="login">
-          登陆
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </form>
+        <h2>
+          登录
+          <span style="font-size: 30px; color: rgb(33, 184, 95)"
+            >Shark Tool</span
+          >
+        </h2>
+        <form action="">
+          <div class="item">
+            <input type="text" v-model="userName" id="userName" required />
+            <label for="userName">用户名：</label>
+          </div>
+          <div class="item">
+            <input type="password" v-model="password" id="password" required />
+            <label for="password">密码：</label>
+          </div>
+          <div>
+            <el-radio-group v-model="identity">
+              <el-radio :label="0" style="padding: 2px">学生</el-radio>
+              <el-radio :label="1" style="padding: 2px">教师</el-radio>
+              <el-radio :label="2" style="padding: 2px">管理员</el-radio>
+            </el-radio-group>
+          </div>
+          <button class="btn" @click.prevent="login">
+            登陆
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </form>
+      </div>
     </div>
-    </div>
-        <el-dialog
+    <el-dialog
       :visible.sync="dialogVisible"
       title="QQ群：958803816"
       width="23%"
     >
-    <img src="@/assets/image/qq-group.png" style="width:20vw;"/>
-    <p>
-      在qq群中发出以下消息以验证身份：
-    </p>
-    <div style="display: flex;align-items: center;justify-content: center;">
-        <span style="width:50%;background-color: #415a94;padding:10px;color:white;font-weight: bold;font-size: 20px;text-align: center;margin:5px">
+      <img src="@/assets/image/qq-group.png" style="width: 20vw" />
+      <p>在qq群中发出以下消息以验证身份：</p>
+      <div style="display: flex; align-items: center; justify-content: center">
+        <span
+          style="
+            width: 50%;
+            background-color: #415a94;
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            text-align: center;
+            margin: 5px;
+          "
+        >
           {{ verifyCode }}
         </span>
-    </div>
+      </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmDialog" style="color: white;background:#21b85f">验 证</el-button>
+        <el-button
+          type="primary"
+          @click="confirmDialog"
+          style="color: white; background: #21b85f"
+          ref="verifyButton"
+          >验 证</el-button
+        >
       </span>
     </el-dialog>
   </div>
@@ -57,6 +74,7 @@
 <script>
 import axios from "@/axios";
 import { utils } from "@/utils/globalUtils";
+import { Stomp } from "@stomp/stompjs";
 /* eslint-disable */
 export default {
   data() {
@@ -65,21 +83,22 @@ export default {
       password: "",
       identity: 0,
       dialogVisible: false, // 控制弹出框的显示和隐藏
-      verifyCode:""
+      verifyCode: "",
+      stompClient: null,
     };
   },
   methods: {
     confirmDialog() {
       // 确认操作
-      axios.get(utils.getProxyUrl('/user/verify-code')).then(res=>{
-        if(res.data.code==200){
-            this.getUserInfo();
-            this.dialogVisible = false;
-            this.$message.success(res.data.message)
-        }else{
+      axios.get(utils.getProxyUrl("/user/verify-code")).then((res) => {
+        if (res.data.code == 200) {
+          this.getUserInfo();
+          this.dialogVisible = false;
+          this.$message.success(res.data.message);
+        } else {
           this.errorMessage(res.data.message);
         }
-      })
+      });
     },
     login() {
       // 验证非空
@@ -103,22 +122,24 @@ export default {
           //登陆成功就转跳页面,失败就输出返回信息
           if (res.data.success) {
             loading.close();
-              localStorage.setItem("token", res.data.data);
-              // 登录成功弹出二维码框
-              if(this.identity != 2){
-                // 弹出群聊框已验证身份
-                // 到这里说明账号和密码都是正确的，这里就可以生成验证码了，发送一个请求对对应的账号创建一个验证码
-                axios.get(utils.getProxyUrl("/user/create-code")).then(res=>{
-                  if(res.data.code==200){
-                    this.verifyCode = res.data.data;
-                    this.dialogVisible = true;
-                  }else{
-                    this.errorMessage(res.data.message);
-                  }
-                })
-
-                return;
-              }
+            localStorage.setItem("token", res.data.data);
+            // 登录成功弹出二维码框
+            if (this.identity != 2) {
+              // 弹出群聊框已验证身份
+              // 到这里说明账号和密码都是正确的，这里就可以生成验证码了，发送一个请求对对应的账号创建一个验证码
+              axios.get(utils.getProxyUrl("/user/create-code")).then((res) => {
+                if (res.data.code == 200) {
+                  this.verifyCode = res.data.data;
+                  this.dialogVisible = true;
+                  // 进行socket的连接，验证后直接通过
+                  this.distorySocket();
+                  this.socketConnect();
+                } else {
+                  this.errorMessage(res.data.message);
+                }
+              });
+              return;
+            }
             // 成功后就去获取用户的信息
             this.getUserInfo();
             this.trueMessage(res.data.message);
@@ -162,10 +183,45 @@ export default {
         }
       });
     },
+    socketConnect() {
+      console.log("socketConnect");
+      
+      // const socket = new WebSocket("ws://localhost:8080/ws");
+      const socket = new WebSocket(`ws://${location.host}/ws`);
+      this.stompClient = Stomp.over(socket);
+      this.stompClient.debug = () => {};
+      this.stompClient.connect(
+        {},
+        () => {
+          // 订阅验证消息
+          this.stompClient.subscribe(
+            `/topic/verifySuccess/${this.userName}`,
+            (message) => {
+              if (message.body) {
+                let data = JSON.parse(message.body);
+                if (data.message == "身份验证成功") {
+                  this.$refs.verifyButton.$el.click();
+                }
+              }
+            }
+          );
+          // 发送添加本人信息
+          this.stompClient.send("/app/login", { userId: this.userName }, null);
+        },
+        (e) => {
+          console.log(e);
+        }
+      );
+    },
+    distorySocket() {
+      if (this.stompClient) {
+        this.stompClient.disconnect();
+      }
+    },
   },
   created() {
     if (localStorage.getItem("token")) {
-      axios.get(getProxyUrl("/user/login-in")).then((res) => {
+      axios.get(utils.getProxyUrl("/user/login-in")).then((res) => {
         if (res.data.success) {
           this.getUserInfo();
         }
@@ -175,11 +231,15 @@ export default {
       this.identity = parseInt(localStorage.getItem("identity"));
     }
   },
+  beforeDestroy() {
+    if(this.stompClient){
+      this.stompClient.disconnect();
+    }
+  },
 };
 </script>
 
 <style scoped>
-
 a {
   text-decoration: none;
 }
@@ -265,7 +325,7 @@ h2 {
   background: #03e9f4;
   box-shadow: 0 0 5px 0 #03e9f4, 0 0 25px 0 #03e9f4, 0 0 50px 0 #03e9f4,
     0 0 100px 0 #03e9f4;
-  transition: all .3s linear;
+  transition: all 0.3s linear;
 }
 
 .btn > span {

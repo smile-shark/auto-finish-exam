@@ -14,6 +14,7 @@ public class SchoolLoginRequest {
     private String password;
     private Integer code = 2341;
     private String client_id;
+    private String vid="";
     private String client_secret;
     private String grant_type = "password";
     private Integer tenant_id = 32;

@@ -9,6 +9,10 @@ docker:
   ai-key: ${AI_KEY:WiLorVJAspgMTGwwKyZY:yqRaSQGrdclmoLUzAXYV}
   ai-url: ${AI_URL:https://spark-api-open.xf-yun.com}
   ai-model: ${AI_MODEL:lite}
+  kpid-sign-url: ${KPID_SIGN_URL:http://127.0.0.1:8000/sign/decode}
+  shiro-ws-url: ${SHIRO_WS_URL:/shark-bot}
+sign:
+  kpid-sign-url: ${docker.kpid-sign-url}
 spring:
   application:
     name: AnswerQuestionServerChild
@@ -45,7 +49,7 @@ shiro:
   ws:
     server:
       enable: true
-      url: "/shark-bot"
+      url: ${docker.shiro-ws-url}
   interceptor: com.smileShark.robot.interceptor.BotInterceptor
 rebot:
   handler-groups: ${docker.qq-group-id} # 监听的群号
@@ -106,7 +110,6 @@ another:
    search-subsection: searchSubsection
    message-interceptor: messageInterceptor
    verify-code: verifyCode:code
-
 key:
   token:
     key: smileshark&${mysql.data.split.string}

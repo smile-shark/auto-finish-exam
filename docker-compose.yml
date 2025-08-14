@@ -27,7 +27,6 @@ services:
       - sharktool-network
     restart: always
 
-  
   napcat:
     environment:
         - NAPCAT_UID=1000
@@ -50,15 +49,24 @@ services:
       - REDIS_ADDRESS=sharktool-redis  # redis地址
       - REDIS_PORT=6379  # redis端口
       - REDIS_PASSWORD=sharktool  # redis密码
+      - KPID_SIGN_URL=http://sharktool-sign-server/sign/decode
+      - SHIRO_WS_URL=/shark-bot
       - QQ_GROUP_ID=  # QQ群号
-      - AI_KEY=  # AI 密钥
+      - AI_KEY= # AI 密钥
       - AI_URL=  # AI 地址
       - AI_MODEL=  # AI 模型
     ports:
       - 18080:8080
     container_name: sharktool
     restart: always
-    image: smilesharklx/sharktool:3.4.1
+    image: smilesharklx/sharktool:3.5.1
+    networks:
+      - sharktool-network
+      
+  sharktool-sign-server:
+    container_name: sharktool-sign-server
+    restart: always
+    image: smilesharklx/sharktool-sign-server:1.0.0
     networks:
       - sharktool-network
       

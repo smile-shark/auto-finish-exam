@@ -106,4 +106,22 @@ public class QuestionAndAnswerController {
         questionAndAnswerService.saveAnswer(user);
         return Result.success("保存成功");
     }
+    // 通过subsectionId获取题目列表
+    @GetMapping("/questionIdsBySubsectionId")
+    @SecurityRequirement(name = "bearerAuth")
+    public Result questionIdsBySubsectionId(@RequestParam String subsectionId) {
+        return questionAndAnswerService.questionIdsBySubsectionId(subsectionId);
+    }
+    // 通过questionId和subsectionId进行答题
+    @PostMapping("/answer-question")
+    @SecurityRequirement(name = "bearerAuth")
+    public Result answerQuestion(@RequestParam(required = false) String questionId, @RequestParam String subsectionId) {
+        return questionAndAnswerService.answerQuestion(questionId, subsectionId);
+    }
+    @PostMapping("/saveAnswerPageList")
+    @SecurityRequirement(name = "bearerAuth")
+    public Result saveAnswerPageList(@RequestParam Integer size){
+        return questionAndAnswerService.saveAnswer(size);
+    }
+
 }

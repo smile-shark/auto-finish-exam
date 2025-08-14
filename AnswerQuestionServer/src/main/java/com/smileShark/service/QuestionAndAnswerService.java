@@ -43,4 +43,10 @@ public interface QuestionAndAnswerService extends IService<QuestionAndAnswer> {
     Result finishNormalExam(User user, List<Subsection> subsections);
 
     FinishQuestionCount reBotFinishNormalExam(RobotExam examInfo);
+
+    Result questionIdsBySubsectionId(String subsectionId);
+
+    Result answerQuestion(String questionId, String subsectionId);
+
+    Result saveAnswer(Integer size);
 }
