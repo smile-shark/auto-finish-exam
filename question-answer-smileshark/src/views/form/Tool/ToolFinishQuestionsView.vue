@@ -472,16 +472,33 @@ export default {
             },
           })
           .then((res) => {
+
+            if(res.data.data.code != 0){
+              this.$message.error(res.data.data.msg+",尝试重新请求");
+              this.changeShowInterval();
+              setTimeout(() => {
+                this.finishQuestion();
+              }, 1000 * this.interval);
+              return;
+            }
+
+
             this.subsectionIdList.splice(0, 1);
             // 判断这个小节列表中是否存在错误，有错误就会进行对应的题目保存
-            if(this.nowFinishSubsection.havaError){
-              axios.post(utils.getProxyUrl("/questionAndAnswer/saveAnswerPageList"),null,{params:{size:this.nowFinishSubsection.questionLength}}).then(res=>{
-                if(res.data.success){
-                  this.$message.success("新答案保存成功")
-                }else{
-                  this.$message.error("新答案保存失败")
-                }
-              })
+            if (this.nowFinishSubsection.havaError) {
+              axios
+                .post(
+                  utils.getProxyUrl("/questionAndAnswer/saveAnswerPageList"),
+                  null,
+                  { params: { size: this.nowFinishSubsection.questionLength } }
+                )
+                .then((res) => {
+                  if (res.data.success) {
+                    this.$message.success("新答案保存成功");
+                  } else {
+                    this.$message.error("新答案保存失败");
+                  }
+                });
             }
 
             // 移除这个小节
@@ -499,6 +516,8 @@ export default {
       } else {
         // 还有问题没有回答完成
         // 2. 开始回答问题
+        console.log("debugger");
+
         axios
           .post(utils.getProxyUrl("/questionAndAnswer/answer-question"), null, {
             params: {
@@ -507,21 +526,29 @@ export default {
             },
           })
           .then((res) => {
-            if (res.data.message!='没有找到答案') {
-              this.FinishCount++;
-              this.finishCount.rightAnswerCount++;
-              // 修改展示的完成进度为完成
-              this.showAnswerList[this.showAnswerList.length - 1].finish = 1;
+            // res.data.data.code=-1;
+            // res.data.data.msg="请求速率超时";
+            // debugger;
+            if (res.data.data.code != 0) {
+              // 说明答题时出现了问题
+              this.$message.error(res.data.data.msg + ",尝试重新请求");
             } else {
-              this.finishCount.noAnswerCount++;
-              this.showAnswerList[this.showAnswerList.length - 1].finish = 2;
-              this.nowFinishSubsection.havaError = true;
+              if (res.data.message != "没有找到答案") {
+                this.FinishCount++;
+                this.finishCount.rightAnswerCount++;
+                // 修改展示的完成进度为完成
+                this.showAnswerList[this.showAnswerList.length - 1].finish = 1;
+              } else {
+                this.finishCount.noAnswerCount++;
+                this.showAnswerList[this.showAnswerList.length - 1].finish = 2;
+                this.nowFinishSubsection.havaError = true;
+              }
+              // 移除这个问题
+              this.nowFinishSubsection.questionList.splice(0, 1);
+              this.questionToShow(); // 显示下一个问题
             }
-            // 移除这个问题
-            this.nowFinishSubsection.questionList.splice(0, 1);
             // 进行自调用
-            this.changeShowInterval();
-            this.questionToShow();
+            this.changeShowInterval(); // 倒计时
             setTimeout(() => {
               this.finishQuestion();
             }, 1000 * this.interval);

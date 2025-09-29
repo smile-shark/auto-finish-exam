@@ -5,7 +5,7 @@ FROM openjdk:22-jdk-slim
 WORKDIR /app
 
 # 将构建好的 Spring Boot 应用程序复制到镜像中
-COPY ./AnswerQuestionServer/target/AnswerQuestionServer-3.5.1.jar /app/SharkTool.jar
+COPY ./AnswerQuestionServer/target/AnswerQuestionServer-3.6.1.jar /app/SharkTool.jar
 
 # 定义环境变量，用于在启动时动态设置 Spring Boot 参数
 ENV MYSQL_ADDRESS=localhost:3306

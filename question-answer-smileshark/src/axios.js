@@ -4,6 +4,7 @@ import router from "@/router/index"
 
 const axiosInstance = axios.create({
     // baseURL: window.location.origin,
+    // baseURL: '/javaSever',
     timeout: 60*1000, // 请求超时时间
     headers: {
         'Content-Type': 'application/json',

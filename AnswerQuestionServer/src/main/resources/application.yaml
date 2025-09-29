@@ -1,7 +1,7 @@
 docker:
-  mysql-address: ${MYSQL_ADDRESS:localhost:3306}
-  mysql-username: ${MYSQL_USERNAME:root}
-  mysql-password: ${MYSQL_PASSWORD:123456}
+  mysql-address: ${MYSQL_ADDRESS:192.168.24.89:11407}
+  mysql-username: ${MYSQL_USERNAME:sharktool}
+  mysql-password: ${MYSQL_PASSWORD:sharktool}
   redis-host: ${REDIS_ADDRESS:localhost}
   redis-port: ${REDIS_PORT:6380}
   redis-password: ${REDIS_PASSWORD:123456}

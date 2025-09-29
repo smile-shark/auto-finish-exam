@@ -562,7 +562,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         // 如果没有questionId说明是进行提交
         if(questionId==null||questionId.isEmpty()){
             // 考试结束
-            SchoolResult schoolResult = restTemplateUtil.get(
+            SchoolResult<?> schoolResult = restTemplateUtil.get(
                     constant.STUDENT_SUBSECTION_EXAM_END_URL,
                     HttpMethod.POST,
                     MediaType.APPLICATION_JSON,
@@ -579,7 +579,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         if (one == null) {
             System.out.println("questionId = " +questionId + " 没有找到答案");
             // 提交答案
-            SchoolResult schoolResult = restTemplateUtil.get(
+            SchoolResult<?> schoolResult = restTemplateUtil.get(
                     constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                     HttpMethod.POST,
                     MediaType.APPLICATION_JSON,
@@ -594,7 +594,7 @@ public class QuestionAndAnswerServiceImp extends ServiceImpl<QuestionAndAnswerMa
         AnswerFormatUtil answerFormatUtil = SpringContextUtil.getBean(AnswerFormatUtil.class);
         List<String> list = answerFormatUtil.formatAnswer(one.getAnswers());
         // 提交答案
-        SchoolResult schoolResult = restTemplateUtil.get(
+        SchoolResult<?> schoolResult = restTemplateUtil.get(
                 constant.STUDENT_SUBSECTION_ANSWER_QUESTION_URL,
                 HttpMethod.POST,
                 MediaType.APPLICATION_JSON,
